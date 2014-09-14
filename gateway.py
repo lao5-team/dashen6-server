@@ -47,13 +47,21 @@ def checkLogin(cookie):
     return False, None, None
 
 
-def loginJsonTemplate(message):
-    template='''
-{
-    "result":"%s"
-}
-    '''
+def notLoginTemplate():
+    return '{"result":"not login"}'
+
+
+def loginTemplate(message):
+    template = '{"result":"%s"}'
     return template % message
+
+
+def pullTemplate():
+    pass
+
+
+def deleteTemplate():
+    pass
 
 
 '''
@@ -80,7 +88,7 @@ class Login:
         cookie = web.cookies()
         login, user, token = checkLogin(cookie)
         if login:
-            return loginJsonTemplate('Already login, User: %s, Token: %s' % (user, token))
+            return loginTemplate('Already login, User: %s, Token: %s' % (user, token))
 
         qs = web.ctx.env.get('QUERY_STRING')
         if qs:
@@ -92,32 +100,46 @@ class Login:
                 token = genToken(user, agent)
                 web.setcookie(USER, user, cookieExpires)
                 web.setcookie(TOKEN, token, cookieExpires)
-                return loginJsonTemplate('Login OK, User: %s, Token: %s' % (user, token))
+                return loginTemplate('Login OK, User: %s, Token: %s' % (user, token))
 
         web.ctx.status = '401 Unauthorized'
-        return loginJsonTemplate('Not login. Please use "?user=username" in query string')
+        return loginTemplate('Not login. Please use "?user=username" in query string')
 
 
 '''
-客户端拉取消息
+客户端从消息队列拉取消息
 '''
 
 
 class PullMsg:
-    def GET(self, param):
+    def GET(self):
+        web.header('Content-Type', 'text/json')
+
+        cookie = web.cookies()
+        login, user, token = checkLogin(cookie)
+        if not login:
+            return notLoginTemplate()
+
         print 'PullMsg'
-        return str(param)
+        return ''
 
 
 '''
-客户端删除消息
+客户端删除消息队列消息,通常是删除已读消息
 '''
 
 
 class DeleteMsg:
-    def GET(self, param):
-        print 'PullMsg'
-        return str(param)
+    def GET(self):
+        web.header('Content-Type', 'text/json')
+
+        cookie = web.cookies()
+        login, user, token = checkLogin(cookie)
+        if not login:
+            return notLoginTemplate()
+
+        print 'DeleteMsg'
+        return ''
 
 
 if __name__ == '__main__':
