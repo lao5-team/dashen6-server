@@ -47,6 +47,15 @@ def checkLogin(cookie):
     return False, None, None
 
 
+def loginJsonTemplate(message):
+    template='''
+{
+    "result":"%s"
+}
+    '''
+    return template % message
+
+
 '''
 HTTP gateway的登录流程
 1.客户端访问"/login",传入"user"参数(必须),填充HTTP头部的"User-Agent"字段(可选)
@@ -66,12 +75,12 @@ HTTP gateway的登录流程
 
 class Login:
     def GET(self):
-        web.header('Content-Type', 'text/plain')
+        web.header('Content-Type', 'text/json')
 
         cookie = web.cookies()
         login, user, token = checkLogin(cookie)
         if login:
-            return 'Already login\nUser: %s\nToken: %s\n' % (user, token)
+            return loginJsonTemplate('Already login, User: %s, Token: %s' % (user, token))
 
         qs = web.ctx.env.get('QUERY_STRING')
         if qs:
@@ -83,10 +92,10 @@ class Login:
                 token = genToken(user, agent)
                 web.setcookie(USER, user, cookieExpires)
                 web.setcookie(TOKEN, token, cookieExpires)
-                return 'Login OK\nUser: %s\nToken: %s\n' % (user, token)
+                return loginJsonTemplate('Login OK, User: %s, Token: %s' % (user, token))
 
         web.ctx.status = '401 Unauthorized'
-        return 'Not login. Please use "?user=username" in query string\n'
+        return loginJsonTemplate('Not login. Please use "?user=username" in query string')
 
 
 '''
