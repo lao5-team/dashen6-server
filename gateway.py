@@ -1,20 +1,23 @@
 #! /usr/bin/env python
+# -*- coding: utf-8 -*-
 #
 # author: yafei
 # HTTP Gateway
 import web
 import hashlib
 import urlparse
-
-# configurations
-cookieExpires = 3600
-# end of configurations
+from gateway_config import *
 
 urls = (
         '/login', 'Login',
         )
 app = web.application(urls, globals())
 
+'''
+Token 是下面字段的MD5的16进制字符串:
+1.用户名
+2.HTTP头部的"User-Agent"字段
+'''
 def genToken(user, agent):
     m = hashlib.md5()
     m.update(user)
@@ -30,6 +33,21 @@ def checkLogin(cookie):
             return True,user,token
     return False,None,None
 
+'''
+HTTP gateway的登录流程
+1.客户端访问"/login",传入"user"参数(必须),填充HTTP头部的"User-Agent"字段(可选)
+    例如"/login?user=laowu"
+2.HTTP gateway返回status code "200 OK",
+在HTTP头部通过"Set-Cookie"字段给客户端种Cookie,
+在接下来的所有访问中,客户端均需要在HTTP头部的"Cookie"字段携带这些Cookie.
+目前的Cookie包含下面字段:
+    user
+    token
+
+如果客户端重复登录,仍然返回status code "200 OK",但不会再设置Cookie.
+
+如果没有传入"user"参数,返回status code "401 Unauthorized"
+'''
 class Login:
     def GET(self):
         web.header('Content-Type', 'text/plain')
