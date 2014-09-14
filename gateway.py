@@ -9,29 +9,43 @@ import urlparse
 from gateway_config import *
 
 urls = (
-        '/login', 'Login',
-        )
+    '/login', 'Login',
+    '/pull', 'PullMsg',
+    '/delete', 'DeleteMsg',
+)
 app = web.application(urls, globals())
+USER = 'user'
+TOKEN = 'token'
 
 '''
-Token 是下面字段的MD5的16进制字符串:
+Token是下面字段的MD5的16进制字符串:
 1.用户名
 2.HTTP头部的"User-Agent"字段
 '''
+
+
 def genToken(user, agent):
     m = hashlib.md5()
     m.update(user)
-    if agent is not None:
+    if agent:
         m.update(agent)
     return m.hexdigest()
 
+
+'''
+检查用户是否登录
+'''
+
+
 def checkLogin(cookie):
-    user = cookie.get('user')
-    if user is not None:
-        token = cookie.get('token')
-        if token is not None:
-            return True,user,token
-    return False,None,None
+    if cookie:
+        user = cookie.get(USER)
+        if user:
+            token = cookie.get(TOKEN)
+            if token:
+                return True, user, token
+    return False, None, None
+
 
 '''
 HTTP gateway的登录流程
@@ -48,34 +62,54 @@ HTTP gateway的登录流程
 
 如果没有传入"user"参数,返回status code "401 Unauthorized"
 '''
+
+
 class Login:
     def GET(self):
         web.header('Content-Type', 'text/plain')
 
         cookie = web.cookies()
-        login,user,token = checkLogin(cookie)
+        login, user, token = checkLogin(cookie)
         if login:
             return 'Already login\nUser: %s\nToken: %s\n' % (user, token)
 
         qs = web.ctx.env.get('QUERY_STRING')
-        if qs is not None:
+        if qs:
             qsDict = urlparse.parse_qs(qs)
-            user = qsDict.get('user')
-            if user is not None:
+            user = qsDict.get(USER)
+            if user:
                 user = ''.join(user)
                 agent = web.ctx.env.get('HTTP_USER_AGENT')
                 token = genToken(user, agent)
-                web.setcookie('user', user, cookieExpires)
-                web.setcookie('token', token, cookieExpires)
+                web.setcookie(USER, user, cookieExpires)
+                web.setcookie(TOKEN, token, cookieExpires)
                 return 'Login OK\nUser: %s\nToken: %s\n' % (user, token)
 
         web.ctx.status = '401 Unauthorized'
         return 'Not login. Please use "?user=username" in query string\n'
 
-#class Default:
-#    def GET(self, param):
-#        print 'Default'
-#        return str(param)
+
+'''
+客户端拉取消息
+'''
+
+
+class PullMsg:
+    def GET(self, param):
+        print 'PullMsg'
+        return str(param)
+
+
+'''
+客户端删除消息
+'''
+
+
+class DeleteMsg:
+    def GET(self, param):
+        print 'PullMsg'
+        return str(param)
+
 
 if __name__ == '__main__':
     app.run()

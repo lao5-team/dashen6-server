@@ -6,6 +6,7 @@
 import unittest
 from gateway import app
 
+
 class GateWayTest(unittest.TestCase):
     def testLogin_NotLogin(self):
         response = app.request('/login', method='GET')
@@ -21,12 +22,13 @@ class GateWayTest(unittest.TestCase):
 
     def testLogin_AlreadyLogin(self):
         response = app.request('/login?user=123', method='GET',
-                headers = {
-                    'Cookie': 'user=test; token=9527'
-                    }
-                )
+                               headers={
+                                   'Cookie': 'user=test; token=9527'
+                               }
+        )
         self.assertIn('Already login', response.data)
         self.assertEquals(response.status, '200 OK')
+
 
 if __name__ == "__main__":
     unittest.main()
