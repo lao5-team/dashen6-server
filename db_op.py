@@ -5,6 +5,7 @@
 # mongodb operations
 import pymongo
 from gateway_config import *
+from bson.objectid import ObjectId
 
 
 class DBOp:
@@ -13,8 +14,8 @@ class DBOp:
         self.db = self.connection[dbName]
         self.user = self.db[dbUserTable]
         self.activity = self.db[dbActivityTable]
-        self.msgQuene = self.db[dbMsgQueueTable]
-        self.readMsgQuene = self.db[dbReadMsgQueueTable]
+        self.msg_queue = self.db[dbMsgQueueTable]
+        self.read_msg_queue = self.db[dbReadMsgQueueTable]
 
     def __del__(self):
         self.close()
@@ -53,9 +54,22 @@ class DBOp:
             raise TypeError("message should be an instance of list or str")
 
     @staticmethod
-    def _newId(queue):
+    def new_id(queue):
         post = queue.insert({'status': 'allocated'})
         if post:
             return str(post)
-        else:
-            return None
+        raise Exception('''couldn't create new id.''')
+
+    @staticmethod
+    def save_id(queue, _id, data):
+        post = queue.find_and_modify(
+            query={'_id': ObjectId(_id)},
+            update={'$set': {'status': 'saved', 'data': data}},
+            fields=['_id'])
+
+        if post:
+            _id = post.get('_id')
+            if _id:
+                return str(_id)
+
+        raise Exception('''couldn't update id=%s, maybe it doesn't exist.''' % _id)

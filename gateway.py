@@ -31,7 +31,7 @@ Token是下面字段的MD5的16进制字符串:
 '''
 
 
-def genToken(user, agent):
+def gen_token(user, agent):
     m = hashlib.md5()
     m.update(user)
     if agent:
@@ -44,7 +44,7 @@ def genToken(user, agent):
 '''
 
 
-def checkLogin(cookie):
+def check_login(cookie):
     if cookie:
         user = cookie.get(USER)
         if user:
@@ -54,33 +54,30 @@ def checkLogin(cookie):
     return False, None, None
 
 
-def notLoginTemplate():
+def not_login_template():
     return '{"result":"not login"}'
 
 
-def resultTemplate(message):
+def result_template(message):
     template = '{"result":"%s"}'
     return template % message
 
 
-def idTemplate(id):
-    template = '{"id":"%s"}'
-    return template % id
+def id_template(_id):
+    template = '{"result":"success","id":"%s"}'
+    return template % _id
 
 
-def pullTemplate():
-    pass
+def exception_template(e):
+    template = '{"result":"exception occurred","exception":"%s"}'
+    return template % str(e)
 
 
-def deleteTemplate():
-    pass
-
-
-def setStatusCode(web, code):
+def set_status_code(_web, code):
     status = statusMap.get(code)
     if status is None:
         status = '200 OK'
-    web.ctx.status = status
+    _web.ctx.status = status
 
 
 '''
@@ -105,24 +102,24 @@ class Login:
         web.header('Content-Type', 'text/json')
 
         cookie = web.cookies()
-        login, user, token = checkLogin(cookie)
+        login, user, token = check_login(cookie)
         if login:
-            return resultTemplate('Already login, User: %s, Token: %s' % (user, token))
+            return result_template('Already login, User: %s, Token: %s' % (user, token))
 
         qs = web.ctx.env.get('QUERY_STRING')
         if qs:
-            qsDict = urlparse.parse_qs(qs)
-            user = qsDict.get(USER)
+            qs_dict = urlparse.parse_qs(qs)
+            user = qs_dict.get(USER)
             if user:
                 user = ''.join(user)
                 agent = web.ctx.env.get('HTTP_USER_AGENT')
-                token = genToken(user, agent)
+                token = gen_token(user, agent)
                 web.setcookie(USER, user, cookieExpires)
                 web.setcookie(TOKEN, token, cookieExpires)
-                return resultTemplate('Login OK, User: %s, Token: %s' % (user, token))
+                return result_template('Login OK, User: %s, Token: %s' % (user, token))
 
-        setStatusCode(web, 401)
-        return resultTemplate('''Not login. Please use '?user=username' in query string''')
+        set_status_code(web, 401)
+        return result_template('''Not login. Please use '?user=username' in query string''')
 
 
 '''
@@ -135,10 +132,10 @@ class PullMsg:
         web.header('Content-Type', 'text/json')
 
         cookie = web.cookies()
-        login, user, token = checkLogin(cookie)
+        login, user, token = check_login(cookie)
         if not login:
-            setStatusCode(web, 401)
-            return notLoginTemplate()
+            set_status_code(web, 401)
+            return not_login_template()
 
         print 'PullMsg'
         return ''
@@ -154,10 +151,10 @@ class DeleteMsg:
         web.header('Content-Type', 'text/json')
 
         cookie = web.cookies()
-        login, user, token = checkLogin(cookie)
+        login, user, token = check_login(cookie)
         if not login:
-            setStatusCode(web, 401)
-            return notLoginTemplate()
+            set_status_code(web, 401)
+            return not_login_template()
 
         print 'DeleteMsg'
         return ''
@@ -168,7 +165,7 @@ class DeleteMsg:
 
 正常情况下返回返回status code "200 OK"
 结果格式如下:
-{"id":"xxx"}
+{"result":"success","id":"xxx"}
 '''
 
 
@@ -177,12 +174,18 @@ class NewId:
         web.header('Content-Type', 'text/json')
 
         cookie = web.cookies()
-        login, user, token = checkLogin(cookie)
+        login, user, token = check_login(cookie)
         if not login:
-            setStatusCode(web, 401)
-            return notLoginTemplate()
+            set_status_code(web, 401)
+            return not_login_template()
 
-        return idTemplate(db._newId(db.activity))
+        try:
+            _id = db.new_id(db.activity)
+            if debug:
+                print 'NewId id=%s' % _id
+            return id_template(_id)
+        except Exception, e:
+            return exception_template(e)
 
 
 '''
@@ -193,7 +196,7 @@ POST数据为: id + '\r\n' + data + '\r\n'
 
 正常情况下返回返回status code "200 OK"
 结果格式如下:
-{"id":"xxx"}
+{"result":"success","id":"xxx"}
 '''
 
 
@@ -202,27 +205,31 @@ class SaveId:
         web.header('Content-Type', 'text/json')
 
         cookie = web.cookies()
-        login, user, token = checkLogin(cookie)
+        login, user, token = check_login(cookie)
         if not login:
-            setStatusCode(web, 401)
-            return notLoginTemplate()
+            set_status_code(web, 401)
+            return not_login_template()
 
         body = web.data()
         if body is None:
-            setStatusCode(web, 400)
-            return resultTemplate('empty body')
+            set_status_code(web, 400)
+            return result_template('empty body')
         split = body.find('\r\n')
         end = body.rfind('\r\n')
         if split == -1 or end == -1 or split == end:
-            setStatusCode(web, 400)
-            return resultTemplate('invalid body')
+            set_status_code(web, 400)
+            return result_template('invalid body')
 
-        id = body[0:split]
+        _id = body[0:split]
         data = body[split + 2:end]
         if debug:
-            print 'id=%s, data=%s' % (id, data)
+            print 'SaveId id=%s, data=%s' % (_id, data)
 
-        return idTemplate(id)
+        try:
+            _id = db.save_id(db.activity, _id, data)
+            return id_template(_id)
+        except Exception, e:
+            return exception_template(e)
 
 
 if __name__ == '__main__':

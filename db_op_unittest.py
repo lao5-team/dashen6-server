@@ -8,7 +8,7 @@ from db_op import DBOp
 
 
 class DBOpTest(unittest.TestCase):
-    def testPushPull(self):
+    def test_push_pull(self):
         db = DBOp()
         collection = db.db['temp']
         collection.remove()
@@ -20,14 +20,20 @@ class DBOpTest(unittest.TestCase):
         self.assertIsNone(db._pull(collection, 'user3'))
         db.close()
 
-    def testNewId(self):
+    def test_new_save_id(self):
         db = DBOp()
         collection = db.db['temp']
         collection.remove()
-        id = db._newId(collection)
-        assert id is not None
-        assert isinstance(id, str)
-        print 'new generated id is: %s' % id
+        _id1 = db.new_id(collection)
+        assert _id1 is not None
+        assert isinstance(_id1, str)
+        print 'new generated id: %s' % _id1
+        _id2 = db.save_id(collection, _id1, 'test data')
+        assert _id2 is not None
+        assert isinstance(_id2, str)
+        print 'new updated id: %s' % _id2
+
+        self.assertEqual(_id1, _id2)
         db.close()
 
 
