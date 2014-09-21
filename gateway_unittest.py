@@ -32,5 +32,5 @@ class GateWayTest(unittest.TestCase):
         self.assertEquals(response.status, '200 OK')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()
