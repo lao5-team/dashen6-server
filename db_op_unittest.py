@@ -20,6 +20,16 @@ class DBOpTest(unittest.TestCase):
         self.assertIsNone(db._pull(collection, 'user3'))
         db.close()
 
+    def testNewId(self):
+        db = DBOp()
+        collection = db.db['temp']
+        collection.remove()
+        id = db._newId(collection)
+        assert id is not None
+        assert isinstance(id, str)
+        print 'new generated id is: %s' % id
+        db.close()
+
 
 if __name__ == "__main__":
     unittest.main()

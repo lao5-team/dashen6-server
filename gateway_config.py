@@ -2,7 +2,13 @@
 # -*- coding: utf-8 -*-
 #
 # author: yafei
-# HTTP Gateway configuations
+# HTTP Gateway configurations
+
+
+'''
+debug开关
+'''
+debug = True
 
 '''
 Cookie的超时时间(单位:秒)

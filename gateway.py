@@ -6,16 +6,23 @@
 import web
 import hashlib
 import urlparse
+from db_op import DBOp
 from gateway_config import *
 
 urls = (
     '/login', 'Login',
     '/pull', 'PullMsg',
     '/delete', 'DeleteMsg',
+    '/newid', 'NewId',
+    '/saveid', 'SaveId',
 )
 app = web.application(urls, globals())
 USER = 'user'
 TOKEN = 'token'
+
+db = DBOp()
+
+statusMap = {400: '400 Bad Request', 401: '401 Unauthorized'}
 
 '''
 Token是下面字段的MD5的16进制字符串:
@@ -51,9 +58,14 @@ def notLoginTemplate():
     return '{"result":"not login"}'
 
 
-def loginTemplate(message):
+def resultTemplate(message):
     template = '{"result":"%s"}'
     return template % message
+
+
+def idTemplate(id):
+    template = '{"id":"%s"}'
+    return template % id
 
 
 def pullTemplate():
@@ -62,6 +74,13 @@ def pullTemplate():
 
 def deleteTemplate():
     pass
+
+
+def setStatusCode(web, code):
+    status = statusMap.get(code)
+    if status is None:
+        status = '200 OK'
+    web.ctx.status = status
 
 
 '''
@@ -88,7 +107,7 @@ class Login:
         cookie = web.cookies()
         login, user, token = checkLogin(cookie)
         if login:
-            return loginTemplate('Already login, User: %s, Token: %s' % (user, token))
+            return resultTemplate('Already login, User: %s, Token: %s' % (user, token))
 
         qs = web.ctx.env.get('QUERY_STRING')
         if qs:
@@ -100,10 +119,10 @@ class Login:
                 token = genToken(user, agent)
                 web.setcookie(USER, user, cookieExpires)
                 web.setcookie(TOKEN, token, cookieExpires)
-                return loginTemplate('Login OK, User: %s, Token: %s' % (user, token))
+                return resultTemplate('Login OK, User: %s, Token: %s' % (user, token))
 
-        web.ctx.status = '401 Unauthorized'
-        return loginTemplate('Not login. Please use "?user=username" in query string')
+        setStatusCode(web, 401)
+        return resultTemplate('''Not login. Please use '?user=username' in query string''')
 
 
 '''
@@ -118,6 +137,7 @@ class PullMsg:
         cookie = web.cookies()
         login, user, token = checkLogin(cookie)
         if not login:
+            setStatusCode(web, 401)
             return notLoginTemplate()
 
         print 'PullMsg'
@@ -136,10 +156,73 @@ class DeleteMsg:
         cookie = web.cookies()
         login, user, token = checkLogin(cookie)
         if not login:
+            setStatusCode(web, 401)
             return notLoginTemplate()
 
         print 'DeleteMsg'
         return ''
+
+
+'''
+获取一个新的活动Id
+
+正常情况下返回返回status code "200 OK"
+结果格式如下:
+{"id":"xxx"}
+'''
+
+
+class NewId:
+    def GET(self):
+        web.header('Content-Type', 'text/json')
+
+        cookie = web.cookies()
+        login, user, token = checkLogin(cookie)
+        if not login:
+            setStatusCode(web, 401)
+            return notLoginTemplate()
+
+        return idTemplate(db._newId(db.activity))
+
+
+'''
+保存活动信息
+
+使用POST method
+POST数据为: id + '\r\n' + data + '\r\n'
+
+正常情况下返回返回status code "200 OK"
+结果格式如下:
+{"id":"xxx"}
+'''
+
+
+class SaveId:
+    def POST(self):
+        web.header('Content-Type', 'text/json')
+
+        cookie = web.cookies()
+        login, user, token = checkLogin(cookie)
+        if not login:
+            setStatusCode(web, 401)
+            return notLoginTemplate()
+
+        body = web.data()
+        if body is None:
+            setStatusCode(web, 400)
+            return resultTemplate('empty body')
+        split = body.find('\r\n')
+        end = body.rfind('\r\n')
+        if split == -1 or end == -1 or split == end:
+            setStatusCode(web, 400)
+            return resultTemplate('invalid body')
+
+        id = body[0:split]
+        data = body[split + 2:end]
+        if debug:
+            print 'id=%s, data=%s' % (id, data)
+
+        return idTemplate(id)
 
 
 if __name__ == '__main__':

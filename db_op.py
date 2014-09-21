@@ -51,3 +51,11 @@ class DBOp:
             )
         else:
             raise TypeError("message should be an instance of list or str")
+
+    @staticmethod
+    def _newId(queue):
+        post = queue.insert({'status': 'allocated'})
+        if post:
+            return str(post)
+        else:
+            return None
