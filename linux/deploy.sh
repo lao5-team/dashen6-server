@@ -20,3 +20,9 @@ sudo cp nginx.repo /etc/yum.repos.d/
 sudo yum install -y mongodb-org
 sudo yum install -y nginx
 
+git clone git://github.com/mongodb/mongo-python-driver.git pymongo
+cd pymongo/
+python setup.py install
+cd -
+rm -rf pymongo
+
