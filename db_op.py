@@ -72,4 +72,20 @@ class DBOp:
             if _id:
                 return str(_id)
 
-        raise Exception('''couldn't update id=%s, maybe it doesn't exist.''' % _id)
+        raise Exception('''couldn't save id=%s, maybe it doesn't exist.''' % _id)
+
+    @staticmethod
+    def load_id(queue, _id):
+        post = queue.find_one({'_id': ObjectId(_id)})
+        if post is None:
+            raise Exception('''couldn't load id=%s, maybe it doesn't exist.''' % _id)
+
+        status = post.get('status')
+        if status is None or status != 'saved':
+            raise Exception('''couldn't load id=%s, it is uninitialized.''' % _id)
+
+        data = post.get('data')
+        if data is None:
+            raise Exception('''couldn't load id=%s, couldn't find its data.''' % _id)
+
+        return data

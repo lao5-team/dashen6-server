@@ -20,7 +20,7 @@ class DBOpTest(unittest.TestCase):
         self.assertIsNone(db._pull(collection, 'user3'))
         db.close()
 
-    def test_new_save_id(self):
+    def test_new_save_load_id(self):
         db = DBOp()
         collection = db.db['temp']
         collection.remove()
@@ -34,6 +34,7 @@ class DBOpTest(unittest.TestCase):
         print 'new updated id: %s' % _id2
 
         self.assertEqual(_id1, _id2)
+        self.assertEqual(db.load_id(collection, _id1), 'test data')
         db.close()
 
 
