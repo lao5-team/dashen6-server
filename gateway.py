@@ -74,7 +74,7 @@ def id_template(_id):
 
 
 def id_data_template(_id, data):
-    template = '{"result":"success","id":"%s","data":{%s}}'
+    template = '{"result":"success","id":"%s","data":%s}'
     return template % (_id, data)
 
 
@@ -183,11 +183,11 @@ class NewId:
     def GET(self):
         web.header('Content-Type', 'text/json')
 
-        # cookie = web.cookies()
-        # login, user, token = check_login(cookie)
-        # if not login:
-        #     set_status_code(web, 401)
-        #     return not_login_template()
+        cookie = web.cookies()
+        login, user, token = check_login(cookie)
+        if not login:
+            set_status_code(web, 401)
+            return not_login_template()
 
         try:
             _id = db.new_id(db.activity)
@@ -215,11 +215,11 @@ class SaveId:
     def POST(self):
         web.header('Content-Type', 'text/json')
 
-        # cookie = web.cookies()
-        # login, user, token = check_login(cookie)
-        # if not login:
-        #     set_status_code(web, 401)
-        #     return not_login_template()
+        cookie = web.cookies()
+        login, user, token = check_login(cookie)
+        if not login:
+            set_status_code(web, 401)
+            return not_login_template()
 
         body = web.data()
         if body is None:
@@ -260,11 +260,11 @@ class LoadId:
     def GET(self):
         web.header('Content-Type', 'text/json')
 
-        # cookie = web.cookies()
-        # login, user, token = check_login(cookie)
-        # if not login:
-        #     set_status_code(web, 401)
-        #     return not_login_template()
+        cookie = web.cookies()
+        login, user, token = check_login(cookie)
+        if not login:
+            set_status_code(web, 401)
+            return not_login_template()
 
         qs = web.ctx.env.get('QUERY_STRING')
         if qs:
