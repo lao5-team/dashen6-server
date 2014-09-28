@@ -15,14 +15,19 @@ urls = (
     '/delete', 'DeleteMsg',
     '/newid', 'NewId',
     '/saveid', 'SaveId',
+    '/loadid', 'LoadId',
 )
 app = web.application(urls, globals())
 USER = 'user'
 TOKEN = 'token'
+ID = 'id'
 
 db = DBOp()
 
-statusMap = {400: '400 Bad Request', 401: '401 Unauthorized'}
+statusMap = {400: '400 Bad Request',
+             401: '401 Unauthorized',
+             500: '500 Internal Server Error',
+             }
 
 '''
 Token是下面字段的MD5的16进制字符串:
@@ -68,6 +73,11 @@ def id_template(_id):
     return template % _id
 
 
+def id_data_template(_id, data):
+    template = '{"result":"success","id":"%s","data":{%s}}'
+    return template % (_id, data)
+
+
 def exception_template(e):
     template = '{"result":"exception occurred","exception":"%s"}'
     return template % str(e)
@@ -86,7 +96,7 @@ HTTP gateway的登录流程
     例如"/login?user=laowu"
 2.HTTP gateway返回status code "200 OK",
 在HTTP头部通过"Set-Cookie"字段给客户端种Cookie,
-在接下来的所有访问中,客户端均需要在HTTP头部的"Cookie"字段携带这些Cookie.
+在接下来的所有接口访问中,客户端均需要在HTTP头部的"Cookie"字段携带这些Cookie.
 目前的Cookie包含下面字段:
     user
     token
@@ -173,11 +183,11 @@ class NewId:
     def GET(self):
         web.header('Content-Type', 'text/json')
 
-        cookie = web.cookies()
-        login, user, token = check_login(cookie)
-        if not login:
-            set_status_code(web, 401)
-            return not_login_template()
+        # cookie = web.cookies()
+        # login, user, token = check_login(cookie)
+        # if not login:
+        #     set_status_code(web, 401)
+        #     return not_login_template()
 
         try:
             _id = db.new_id(db.activity)
@@ -185,6 +195,7 @@ class NewId:
                 print 'NewId id=%s' % _id
             return id_template(_id)
         except Exception, e:
+            set_status_code(web, 500)
             return exception_template(e)
 
 
@@ -204,11 +215,11 @@ class SaveId:
     def POST(self):
         web.header('Content-Type', 'text/json')
 
-        cookie = web.cookies()
-        login, user, token = check_login(cookie)
-        if not login:
-            set_status_code(web, 401)
-            return not_login_template()
+        # cookie = web.cookies()
+        # login, user, token = check_login(cookie)
+        # if not login:
+        #     set_status_code(web, 401)
+        #     return not_login_template()
 
         body = web.data()
         if body is None:
@@ -229,7 +240,49 @@ class SaveId:
             _id = db.save_id(db.activity, _id, data)
             return id_template(_id)
         except Exception, e:
+            set_status_code(web, 500)
             return exception_template(e)
+
+
+'''
+加载活动信息
+
+本接口需要传入"id"参数(必须)
+    例如"/loadid?id=xxx"
+
+正常情况下返回返回status code "200 OK"
+结果格式如下:
+{"result":"success","id":"xxx","data":{...}}
+'''
+
+
+class LoadId:
+    def GET(self):
+        web.header('Content-Type', 'text/json')
+
+        # cookie = web.cookies()
+        # login, user, token = check_login(cookie)
+        # if not login:
+        #     set_status_code(web, 401)
+        #     return not_login_template()
+
+        qs = web.ctx.env.get('QUERY_STRING')
+        if qs:
+            qs_dict = urlparse.parse_qs(qs)
+            _id = qs_dict.get(ID)
+            if _id:
+                _id = ''.join(_id)
+                if debug:
+                    print 'LoadId id=%s' % _id
+                try:
+                    data = db.load_id(db.activity, _id)
+                    return id_data_template(_id, data)
+                except Exception, e:
+                    set_status_code(web, 500)
+                    return exception_template(e)
+
+        set_status_code(web, 400)
+        return result_template('''Please use '?id=xxx' in query string''')
 
 
 if __name__ == '__main__':
