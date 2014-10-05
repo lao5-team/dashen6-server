@@ -11,7 +11,7 @@ function KillPidFromTcpPort() {
     fi
 
     echo "Process $pid($pname) is listening on TCP:$1, kill it."
-    kill -9 $pid
+    kill -SIGTERM $pid
 }
 
 function CheckPortUp() {
