@@ -2,16 +2,26 @@
 
 function KillPidFromTcpPort() {
     process=$(lsof -iTCP:$1 -sTCP:LISTEN | grep LISTEN)
-    pname=$(echo $process| awk '{print $1}')
-    pid=$(echo $process| awk '{print $2}')
-
-    if test "x$pid" == "x"; then
+    if test "x$process" == "x"; then
         echo "No process is listening on TCP:$1."
         return
     fi
+    pname=$(echo $process| awk '{print $1}')
+    pid=$(echo $process| awk '{print $2}')
 
-    echo "Process $pid($pname) is listening on TCP:$1, kill it."
-    kill -SIGTERM $pid
+    echo "Process $pid($pname) is listening on TCP:$1."
+    echo "Killing it..."
+    kill -15 $pid
+    echo "Done."
+}
+
+function CheckPort() {
+    process=$(lsof -iTCP:$1 -sTCP:LISTEN | grep LISTEN)
+    if test "x$process" != "x"; then
+        echo "1"
+    else
+        echo "0"
+    fi
 }
 
 function CheckPortUp() {
@@ -21,6 +31,7 @@ function CheckPortUp() {
         process=$(lsof -iTCP:$1 -sTCP:LISTEN | grep LISTEN)
         if test "x$process" != "x"; then
             echo "TCP:$1 is up."
+            echo "Done."
             return
         fi
         sleep 1
