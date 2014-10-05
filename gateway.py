@@ -126,6 +126,8 @@ class Login:
                 token = gen_token(user, agent)
                 web.setcookie(USER, user, cookieExpires)
                 web.setcookie(TOKEN, token, cookieExpires)
+                if debug:
+                    print 'Login user=%s, token=%s' % (user, token)
                 return result_template('Login OK, User: %s, Token: %s' % (user, token))
 
         set_status_code(web, 401)
