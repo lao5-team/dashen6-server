@@ -13,6 +13,15 @@ python版本如果是2.6則需要先升級至2.7(最新版本即可,如2.7.8).
 --------
 > sudo ./start.sh
 
+如果需要修改HTTP gateway的端口,修改common.sh中的:
+> gateway_port=80
+
+如果需要修改mongodb的端口,修改common.sh中的:
+> mongodb_port=27017
+
+和gateway_config.py中的:
+> dbPort = 27017
+
 停止
 --------
 > sudo ./stop.sh

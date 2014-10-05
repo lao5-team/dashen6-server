@@ -3,5 +3,5 @@
 . ./common.sh
 
 CheckSid
-KillPidFromTcpPort 80
-KillPidFromTcpPort 27017
+KillPidFromTcpPort $gateway_port
+KillPidFromTcpPort $mongodb_port

@@ -5,9 +5,9 @@
 CheckSid
 
 echo "starting mongodb"
-mongod --dbpath=./mongodb --port 27017 >> mongodb.log 2>&1 &
-CheckPortUp 27017
+mongod --dbpath=./mongodb --port $mongodb_port >> mongodb.log 2>&1 &
+CheckPortUp $mongodb_port
 
 echo "starting gateway"
-python gateway.py 80 >> gateway.log 2>&1 &
-CheckPortUp 80
+python gateway.py $gateway_port >> gateway.log 2>&1 &
+CheckPortUp $gateway_port

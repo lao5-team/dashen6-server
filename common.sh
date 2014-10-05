@@ -35,3 +35,5 @@ function CheckSid() {
     fi
 }
 
+mongodb_port=27017
+gateway_port=80
