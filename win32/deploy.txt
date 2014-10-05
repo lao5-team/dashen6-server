@@ -7,9 +7,9 @@ easy_install ipython
 easy_install web.py
     如果出现安装错误按照如下方法解决
     http://www.68idc.cn/help/jiabenmake/qita/2014040379111.html
-easy_install redis
+easy_install pymongo
 
 2.运行
 运行之前检查一下gateway_config.py中的各种配置是否需要修改
-执行gateway.bat启动HTTP gateway
 执行mongo.bat启动mongodb
+执行gateway.bat启动gateway

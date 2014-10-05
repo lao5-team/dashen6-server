@@ -1,6 +1,6 @@
 #! /bin/sh
 #
-# tested CentOS 6
+# tested on CentOS 6
 #
 set -e
 set -x
