@@ -11,8 +11,6 @@ from gateway_config import *
 
 urls = (
     '/login', 'Login',
-    '/pull', 'PullMsg',
-    '/delete', 'DeleteMsg',
     '/newid', 'NewId',
     '/saveid', 'SaveId',
     '/loadid', 'LoadId',
@@ -26,17 +24,15 @@ db = DBOp()
 
 statusMap = {400: '400 Bad Request',
              401: '401 Unauthorized',
-             500: '500 Internal Server Error',
-             }
-
-'''
-Token是下面字段的MD5的16进制字符串:
-1.用户名
-2.HTTP头部的"User-Agent"字段
-'''
+             500: '500 Internal Server Error'}
 
 
 def gen_token(user, agent):
+    """
+    Token是下面字段的MD5的16进制字符串:
+    1.用户名
+    2.HTTP头部的"User-Agent"字段
+    """
     m = hashlib.md5()
     m.update(user)
     if agent:
@@ -44,12 +40,10 @@ def gen_token(user, agent):
     return m.hexdigest()
 
 
-'''
-检查用户是否登录
-'''
-
-
 def check_login(cookie):
+    """
+    检查用户是否登录
+    """
     if cookie:
         user = cookie.get(USER)
         if user:
@@ -90,24 +84,26 @@ def set_status_code(_web, code):
     _web.ctx.status = status
 
 
-'''
-HTTP gateway的登录流程
-1.客户端访问"/login",传入"user"参数(必须),填充HTTP头部的"User-Agent"字段(可选)
-    例如"/login?user=laowu"
-2.HTTP gateway返回status code "200 OK",
-在HTTP头部通过"Set-Cookie"字段给客户端种Cookie,
-在接下来的所有接口访问中,客户端均需要在HTTP头部的"Cookie"字段携带这些Cookie.
-目前的Cookie包含下面字段:
-    user
-    token
-
-如果客户端重复登录,仍然返回status code "200 OK",但不会再设置Cookie.
-
-如果没有传入"user"参数,返回status code "401 Unauthorized"
-'''
-
-
 class Login:
+    """
+    HTTP gateway的登录流程
+    1.客户端访问"/login",传入"user"参数(必须),填充HTTP头部的"User-Agent"字段(可选)
+        例如"/login?user=laowu"
+    2.HTTP gateway返回status code "200 OK",
+    在HTTP头部通过"Set-Cookie"字段给客户端种Cookie,
+    在接下来的所有接口访问中,客户端均需要在HTTP头部的"Cookie"字段携带这些Cookie.
+    目前的Cookie包含下面字段:
+        user
+        token
+
+    如果客户端重复登录,仍然返回status code "200 OK",但不会再设置Cookie.
+
+    如果没有传入"user"参数,返回status code "401 Unauthorized"
+    """
+
+    def __init__(self):
+        pass
+
     def GET(self):
         web.header('Content-Type', 'text/json')
 
@@ -124,8 +120,8 @@ class Login:
                 user = ''.join(user)
                 agent = web.ctx.env.get('HTTP_USER_AGENT')
                 token = gen_token(user, agent)
-                web.setcookie(USER, user, cookieExpires)
-                web.setcookie(TOKEN, token, cookieExpires)
+                web.setcookie(USER, user, cookie_expires)
+                web.setcookie(TOKEN, token, cookie_expires)
                 if debug:
                     print 'Login user=%s, token=%s' % (user, token)
                 return result_template('Login OK, User: %s, Token: %s' % (user, token))
@@ -134,54 +130,18 @@ class Login:
         return result_template('''Not login. Please use '?user=username' in query string''')
 
 
-'''
-客户端从消息队列拉取消息
-'''
-
-
-class PullMsg:
-    def GET(self):
-        web.header('Content-Type', 'text/json')
-
-        cookie = web.cookies()
-        login, user, token = check_login(cookie)
-        if not login:
-            set_status_code(web, 401)
-            return not_login_template()
-
-        print 'PullMsg'
-        return ''
-
-
-'''
-客户端删除消息队列消息,通常是删除已读消息
-'''
-
-
-class DeleteMsg:
-    def GET(self):
-        web.header('Content-Type', 'text/json')
-
-        cookie = web.cookies()
-        login, user, token = check_login(cookie)
-        if not login:
-            set_status_code(web, 401)
-            return not_login_template()
-
-        print 'DeleteMsg'
-        return ''
-
-
-'''
-获取一个新的活动Id
-
-正常情况下返回返回status code "200 OK"
-结果格式如下:
-{"result":"success","id":"xxx"}
-'''
-
-
 class NewId:
+    """
+    获取一个新的活动Id
+
+    正常情况下返回返回status code "200 OK"
+    结果格式如下:
+    {"result":"success","id":"xxx"}
+    """
+
+    def __init__(self):
+        pass
+
     def GET(self):
         web.header('Content-Type', 'text/json')
 
@@ -201,19 +161,21 @@ class NewId:
             return exception_template(e)
 
 
-'''
-保存活动信息
-
-使用POST method
-POST数据为: id + '\r\n' + data + '\r\n'
-
-正常情况下返回返回status code "200 OK"
-结果格式如下:
-{"result":"success","id":"xxx"}
-'''
-
-
 class SaveId:
+    """
+    保存活动信息
+
+    使用POST method
+    POST数据为: id + '\r\n' + data + '\r\n'
+
+    正常情况下返回返回status code "200 OK"
+    结果格式如下:
+    {"result":"success","id":"xxx"}
+    """
+
+    def __init__(self):
+        pass
+
     def POST(self):
         web.header('Content-Type', 'text/json')
 
@@ -239,26 +201,28 @@ class SaveId:
             print 'SaveId id=%s, data=%s' % (_id, data)
 
         try:
-            _id = db.save_id(db.activity, _id, data)
+            _id = db.save(db.activity, _id, {'data': data})
             return id_template(_id)
         except Exception, e:
             set_status_code(web, 500)
             return exception_template(e)
 
 
-'''
-加载活动信息
-
-本接口需要传入"id"参数(必须)
-    例如"/loadid?id=xxx"
-
-正常情况下返回返回status code "200 OK"
-结果格式如下:
-{"result":"success","id":"xxx","data":{...}}
-'''
-
-
 class LoadId:
+    """
+    加载活动信息
+
+    本接口需要传入"id"参数(必须)
+        例如"/loadid?id=xxx"
+
+    正常情况下返回返回status code "200 OK"
+    结果格式如下:
+    {"result":"success","id":"xxx","data":{...}}
+    """
+
+    def __init__(self):
+        pass
+
     def GET(self):
         web.header('Content-Type', 'text/json')
 
@@ -277,8 +241,8 @@ class LoadId:
                 if debug:
                     print 'LoadId id=%s' % _id
                 try:
-                    data = db.load_id(db.activity, _id)
-                    return id_data_template(_id, data)
+                    data = db.load(db.activity, _id)
+                    return id_data_template(_id, data['data'])
                 except Exception, e:
                     set_status_code(web, 500)
                     return exception_template(e)

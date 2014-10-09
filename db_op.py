@@ -7,15 +7,17 @@ import pymongo
 from gateway_config import *
 from bson.objectid import ObjectId
 
+STATUS_OK = 'ok'
+STATUS_DELETED = 'deleted'
+
 
 class DBOp:
     def __init__(self):
-        self.connection = pymongo.Connection(dbHostname, dbPort)
-        self.db = self.connection[dbName]
-        self.user = self.db[dbUserTable]
-        self.activity = self.db[dbActivityTable]
-        self.msg_queue = self.db[dbMsgQueueTable]
-        self.read_msg_queue = self.db[dbReadMsgQueueTable]
+        self.connection = pymongo.Connection(db_hostname, db_port)
+        self.db = self.connection[db_name]
+        self.user = self.db[db_user_table]
+        self.activity = self.db[db_activity_table]
+        self.unit_test = self.db[db_unit_test_table]
 
     def __del__(self):
         self.close()
@@ -26,66 +28,117 @@ class DBOp:
             self.connection = None
 
     @staticmethod
-    def _pull(queue, user):
-        cursor = queue.find(
-            {'user': user}
-        )
-        if cursor and cursor.count() == 1:
-            queue = cursor[0].get('queue')
-            if queue:
-                return queue
-        return None
-
-    @staticmethod
-    def _push(queue, user, message):
-        if isinstance(message, list):
-            queue.find_and_modify(
-                query={'user': user},
-                update={'$push': {'queue': {'$each': message}}},
-                upsert=True
-            )
-        elif isinstance(message, str):
-            queue.find_and_modify(
-                query={'user': user},
-                update={'$push': {'queue': message}},
-                upsert=True
-            )
-        else:
-            raise TypeError("message should be an instance of list or str")
-
-    @staticmethod
-    def new_id(queue):
-        post = queue.insert({'status': 'allocated'})
+    def new_id(table):
+        """
+        在table中,创建一条记录,返回id
+        """
+        check_table(table)
+        post = table.insert({'status': STATUS_OK})
         if post:
             return str(post)
         raise Exception('''couldn't create new id.''')
 
     @staticmethod
-    def save_id(queue, _id, data):
-        post = queue.find_and_modify(
+    def save(table, _id, data_map):
+        """
+        在table中,更新/保存_id的数据,返回id
+        """
+        check_table(table)
+        data_map['status'] = STATUS_OK
+        post = table.find_and_modify(
             query={'_id': ObjectId(_id)},
-            update={'$set': {'status': 'saved', 'data': data}},
+            update={'$set': data_map},
             fields=['_id'])
 
         if post:
             _id = post.get('_id')
             if _id:
                 return str(_id)
-
-        raise Exception('''couldn't save id=%s, maybe it doesn't exist.''' % _id)
+        raise Exception('''couldn't save id=%s, it doesn't exist.''' % _id)
 
     @staticmethod
-    def load_id(queue, _id):
-        post = queue.find_one({'_id': ObjectId(_id)})
+    def delete(table, _id):
+        """
+        在table中,删除_id的数据,返回id
+        注意,没有真正删除数据,而是将status置为deleted
+        """
+        check_table(table)
+        post = table.find_and_modify(
+            query={'_id': ObjectId(_id)},
+            update={'$set': {'status': STATUS_DELETED}},
+            fields=['_id'])
+
+        if post:
+            _id = post.get('_id')
+            if _id:
+                return str(_id)
+        raise Exception('''couldn't delete id=%s, it doesn't exist.''' % _id)
+
+    @staticmethod
+    def load(table, _id, fields=None):
+        """
+        在table中,读取_id的数据并返回
+        """
+        check_table(table)
+        post = table.find_one({'_id': ObjectId(_id), 'status': STATUS_OK}, fields=fields)
         if post is None:
-            raise Exception('''couldn't load id=%s, maybe it doesn't exist.''' % _id)
+            raise Exception('''couldn't load id=%s, it doesn't exist or deleted.''' % _id)
 
-        status = post.get('status')
-        if status is None or status != 'saved':
-            raise Exception('''couldn't load id=%s, it is uninitialized.''' % _id)
+        return post
 
-        data = post.get('data')
-        if data is None:
-            raise Exception('''couldn't load id=%s, couldn't find its data.''' % _id)
+    @staticmethod
+    def push(table, _ids, field, values):
+        """
+        在table中,向_ids的field字段对应的队列中中添加一条或多条数据
+        """
+        if isinstance(values, list):
+            update = {'$addToSet': {field: {'$each': values}}}
+        elif isinstance(values, str):
+            update = {'$addToSet': {field: values}}
+        else:
+            raise TypeError("values should be an instance of list or str")
 
-        return data
+        if isinstance(_ids, list):
+            for _id in _ids:
+                table.find_and_modify(
+                    query={'_id': ObjectId(_id)},
+                    update=update,
+                    fields=['_id'],
+                    upsert=True
+                )
+        elif isinstance(_ids, str):
+            table.find_and_modify(
+                query={'_id': ObjectId(_ids)},
+                update=update,
+                fields=['_id'],
+                upsert=True
+            )
+
+    @staticmethod
+    def pop(table, _ids, field, values):
+        """
+        在table中,从_ids的field字段对应的队列中中删除一条或多条数据
+        """
+        if isinstance(values, list):
+            update = {'$pullAll': {field: values}}
+        elif isinstance(values, str):
+            update = {'$pullAll': {field: [values]}}
+        else:
+            raise TypeError("values should be an instance of list or str")
+
+        if isinstance(_ids, list):
+            for _id in _ids:
+                table.find_and_modify(
+                    query={'_id': ObjectId(_id)},
+                    update=update,
+                    fields=['_id'],
+                    upsert=True
+                )
+        elif isinstance(_ids, str):
+            table.find_and_modify(
+                query={'_id': ObjectId(_ids)},
+                update=update,
+                fields=['_id'],
+                upsert=True
+            )
+
