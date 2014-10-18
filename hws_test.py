@@ -1,4 +1,5 @@
-#coding=UTF-8
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
 '''
 Created on 2012-9-24
 
@@ -19,12 +20,12 @@ from com.hws.s3.models.acl import ACL
 def demo():   
 
     #指定用户自己的AK，SK
-    AK = ""
-    SK = ""
+    AK = "F7160B480A5E67431C75"
+    SK = "19oGfWwCbvSpmPfwiGxYOjl1EKUAAAFJCl5nQ/S6"
 
     #初始化  定义一个HuaweiS3对象    
     s3 = HuaweiS3(AK, SK, False)  
-    bucket_name = "test2012" + AK.lower() #字符串转换成小写
+    bucket_name = "galneryus"
 
     #===========================================================================
     # 检查存储空间是否存在
