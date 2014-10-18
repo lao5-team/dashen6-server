@@ -1,4 +1,7 @@
 #! /bin/sh
+#
+# author: yafei
+# start services
 
 . ./common.sh
 

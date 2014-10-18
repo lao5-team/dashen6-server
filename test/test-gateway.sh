@@ -1,10 +1,16 @@
 #! /bin/sh
 
+
+. ../common.sh
+port=8080
+url="http://localhost:$port"
+yes=$(CheckPort $port)
+if test $yes != "1"; then
+    echo "Port $port is not open."
+    exit 1
+fi
+
 set -e
-
-. ./common.sh
-url="http://localhost:8080"
-
 
 curl -v ${url}/login > result 2>&1
 r=$(cat result | grep " 401")

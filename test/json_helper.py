@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 #
 # author: yafei
-#
 # print field from json result
 
 import json

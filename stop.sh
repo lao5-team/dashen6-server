@@ -1,4 +1,7 @@
 #! /bin/sh
+#
+# author: yafei
+# stop services
 
 . ./common.sh
 
