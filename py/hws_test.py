@@ -1,6 +1,8 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
-
+#
+# author: yafei
+# huawei hws test
 import os
 
 from com.hws.s3.client.huawei_s3 import HuaweiS3
@@ -14,14 +16,15 @@ from com.hws.s3.models.acl import ACL
 
 
 def hws_test():
-    AK = "F7160B480A5E67431C75"
-    SK = "19oGfWwCbvSpmPfwiGxYOjl1EKUAAAFJCl5nQ/S6"
+    AK = 'F7160B480A5E67431C75'
+    SK = '19oGfWwCbvSpmPfwiGxYOjl1EKUAAAFJCl5nQ/S6'
     s3 = HuaweiS3(AK, SK, is_secure=False, server='s3.hwclouds.com')
     bucket_name = "galneryus"
 
     # print 'name: %s' % s3.get_canonical_username()
     # print 'id: %s' % s3.get_canonical_userid()
 
+    # header是map,map的value是一个list
     headers = {'x-amz-acl': ['public-read']}
 
     # bucket
@@ -35,15 +38,16 @@ def hws_test():
     lmb = s3.list_buckets()
     bucket_list = lmb.entries
 
-    print "buckets:"
+    print 'listing buckets:'
     for bk in bucket_list:
         print '    %s' % bk.name
 
-    print "putting %s" % __file__
+    print 'putting %s to bucket "%s"' % (__file__, bucket_name)
     file_path = __file__
     objkey = os.path.basename(file_path)
 
-    metadata = {}  # 元数据用字典表示，其中的value必须使用列表类型
+    # metadata是map,map的value是一个list
+    metadata = {}
     metadata["a"] = ["1"]
     metadata["b"] = ["2"]
 
