@@ -5,6 +5,7 @@
 
 mongodb_port=27017
 gateway_port=80
+photo_port=81
 
 function KillPidFromTcpPort() {
     process=$(lsof -iTCP:$1 -sTCP:LISTEN | grep LISTEN)

@@ -8,3 +8,4 @@
 CheckSid
 KillPidFromTcpPort $gateway_port
 KillPidFromTcpPort $mongodb_port
+KillPidFromTcpPort $photo_port
