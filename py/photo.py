@@ -112,8 +112,11 @@ class Upload:
 
 
 class UploadFile:
+    def __init__(self):
+        pass
+
     def GET(self):
-        return """<html>
+        return '''<html>
 <head>
 <title>Upload File</title>
 </head>
@@ -123,7 +126,7 @@ class UploadFile:
 <input type="submit"/>
 </form>
 </body>
-</html>"""
+</html>'''
 
     def POST(self):
         x = web.input(myfile={})
@@ -133,6 +136,7 @@ class UploadFile:
             url = hws_upload(filename, data)
             return url_template(url)
         except Exception, e:
+            web.debug(str(e))
             set_status_code(web, 500)
             return exception_template(e)
 

@@ -101,7 +101,7 @@ class Login:
         cookie = web.cookies()
         login, user, token = check_login(cookie)
         if login:
-            return result_template('Already login, User: %s, Token: %s' % (user, token))
+            return result_template('''Already login, User: %s, Token: %s''' % (user, token))
 
         qs = web.ctx.env.get('QUERY_STRING')
         if qs:
@@ -114,11 +114,11 @@ class Login:
                 web.setcookie(USER, user, cookie_expires)
                 web.setcookie(TOKEN, token, cookie_expires)
                 if debug:
-                    print 'Login user=%s, token=%s' % (user, token)
-                return result_template('Login OK, User: %s, Token: %s' % (user, token))
+                    web.debug('Login user=%s, token=%s' % (user, token))
+                return result_template('''Login OK, User: %s, Token: %s''' % (user, token))
 
         set_status_code(web, 401)
-        return result_template('''Not login. Please use '?user=username' in query string''')
+        return result_template('''Not login. Please use "?user=username" in query string''')
 
 
 class NewId:
@@ -127,7 +127,7 @@ class NewId:
 
     正常情况下返回返回status code "200 OK"
     结果格式如下:
-    {"result":"success","id":"xxx"}
+        {"result":"success","id":"xxx"}
     """
 
     def __init__(self):
@@ -145,9 +145,10 @@ class NewId:
         try:
             _id = db.new_id(db.activity)
             if debug:
-                print 'NewId id=%s' % _id
+                web.debug('NewId id=%s' % _id)
             return id_template(_id)
         except Exception, e:
+            web.debug(str(e))
             set_status_code(web, 500)
             return exception_template(e)
 
@@ -161,7 +162,7 @@ class SaveId:
 
     正常情况下返回返回status code "200 OK"
     结果格式如下:
-    {"result":"success","id":"xxx"}
+        {"result":"success","id":"xxx"}
     """
 
     def __init__(self):
@@ -179,22 +180,23 @@ class SaveId:
         body = web.data()
         if body is None:
             set_status_code(web, 400)
-            return result_template('empty body')
+            return result_template('Empty body')
         split = body.find('\r\n')
         end = body.rfind('\r\n')
         if split == -1 or end == -1 or split == end:
             set_status_code(web, 400)
-            return result_template('invalid body')
+            return result_template('Invalid body')
 
         _id = body[0:split]
         data = body[split + 2:end]
         if debug:
-            print 'SaveId id=%s, data=%s' % (_id, data)
+            web.debug('SaveId id=%s, data=%s' % (_id, data))
 
         try:
             _id = db.save(db.activity, _id, {'data': data})
             return id_template(_id)
         except Exception, e:
+            web.debug(str(e))
             set_status_code(web, 500)
             return exception_template(e)
 
@@ -203,12 +205,12 @@ class LoadId:
     """
     加载活动信息
 
-    本接口需要传入"id"参数(必须)
-        例如"/loadid?id=xxx"
+    参数
+        id=[id]
 
     正常情况下返回返回status code "200 OK"
     结果格式如下:
-    {"result":"success","id":"xxx","data":{...}}
+        {"result":"success","id":"xxx","data":{...}}
     """
 
     def __init__(self):
@@ -230,16 +232,122 @@ class LoadId:
             if _id:
                 _id = ''.join(_id)
                 if debug:
-                    print 'LoadId id=%s' % _id
+                    web.debug('LoadId id=%s' % _id)
                 try:
                     data = db.load(db.activity, _id)
                     return id_data_template(_id, data['data'])
                 except Exception, e:
+                    web.debug(str(e))
                     set_status_code(web, 500)
                     return exception_template(e)
 
         set_status_code(web, 400)
-        return result_template('''Please use '?id=xxx' in query string''')
+        return result_template('''Please use "?id=xxx" in query string''')
+
+
+class DB:
+    """
+    数据库增删改查功能
+
+    使用POST method
+
+    1.增
+        参数
+            action=new&table=[table]
+        正常情况下返回返回status code "200 OK"
+        结果格式如下:
+            {"result":"success","id":"xxx"}
+    2.改
+        参数
+            action=set&table=[table]&id=[id]
+        POST数据
+            为此id对应的数据,它将被保存到数据库
+        正常情况下返回返回status code "200 OK"
+        结果格式如下:
+            {"result":"success","id":"xxx"}
+    3.查
+        参数
+            action=get&table=[table]&id=[id]
+        正常情况下返回返回status code "200 OK"
+        结果格式如下:
+            {"result":"success","id":"xxx","data":{...}}
+    4.删
+        参数
+            action=del&table=[table]&id=[id]
+        正常情况下返回返回status code "200 OK"
+        结果格式如下:
+            {"result":"success","id":"xxx"}
+    """
+
+    def __init__(self):
+        pass
+
+    def POST(self):
+        web.header('Content-Type', 'text/json')
+
+        # cookie = web.cookies()
+        # login, user, token = check_login(cookie)
+        # if not login:
+        # set_status_code(web, 401)
+        # return not_login_template()
+
+        qs = web.ctx.env.get('QUERY_STRING')
+        if not qs:
+            set_status_code(web, 400)
+            return result_template('''No parameters''')
+        qs_dict = urlparse.parse_qs(qs)
+
+        action = qs_dict.get('action')
+        table = qs_dict.get('table')
+        if not action or not table:
+            set_status_code(web, 400)
+            return result_template('''Illegal parameters: no "action" nor "table"''')
+        action = ''.join(action)
+        table = ''.join(table)
+
+        try:
+            if action == 'new':
+                _id = db.new_id(table)
+                if debug:
+                    web.debug('DB action=new, table=%s, id=%s' % (table, _id))
+                return id_template(_id)
+            elif action == 'set':
+                _id = qs_dict.get('id')
+                data = web.data()
+                if not _id or not data:
+                    set_status_code(web, 400)
+                    return result_template('''Illegal parameters: no "id" nor "data"''')
+                _id = ''.join(_id)
+                if debug:
+                    web.debug('DB action=set, table=%s, id=%s' % (table, _id))
+                _id = db.save(table, _id, {'data': data})
+                return id_template(_id)
+            elif action == 'get':
+                _id = qs_dict.get('id')
+                if not _id:
+                    set_status_code(web, 400)
+                    return result_template('''Illegal parameters: no "id"''')
+                _id = ''.join(_id)
+                if debug:
+                    web.debug('DB action=get, table=%s, id=%s' % (table, _id))
+                data = db.load(table, _id)
+                return id_data_template(_id, data['data'])
+            elif action == 'del':
+                _id = qs_dict.get('id')
+                if not _id:
+                    set_status_code(web, 400)
+                    return result_template('''Illegal parameters: no "id"''')
+                _id = ''.join(_id)
+                if debug:
+                    web.debug('DB action=del, table=%s, id=%s' % (table, _id))
+                db.delete(table, _id)
+                return id_template(_id)
+            else:
+                return result_template('''Illegal parameters: "action=%s"''' % action)
+        except Exception, e:
+            web.debug(str(e))
+            set_status_code(web, 500)
+            return exception_template(e)
 
 
 if __name__ == '__main__':
@@ -249,6 +357,7 @@ if __name__ == '__main__':
         '/newid', 'NewId',
         '/saveid', 'SaveId',
         '/loadid', 'LoadId',
+        '/db', 'DB',
     )
     app = web.application(urls, globals())
     app.run()

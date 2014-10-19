@@ -36,15 +36,3 @@ db_activity_table = 'activity'
 单元测试使用的表名
 """
 db_unit_test_table = 'ut'
-
-valid_tables = [db_user_table, db_activity_table, db_unit_test_table]
-
-
-def check_table(table):
-    """
-    检查是否是有效表名
-    """
-    for t in valid_tables:
-        if table.name == t:
-            return
-    raise Exception('''couldn't operation on table %s.''' % table)
