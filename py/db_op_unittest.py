@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # author: yafei
-# mongodb operations unit test
+# mongodb operations unit test TODO: fix
 import unittest
 from db_op import DBOp
 
@@ -33,7 +33,7 @@ class DBOpTest(unittest.TestCase):
             db.load(table, _id1)
             self.assertFalse('unreachable for exception')
         except Exception, e:
-            self.assertIn('''couldn't load''', e.message)
+            self.assertIn('''Couldn't load''', e.message)
             self.assertIn('''it doesn't exist or deleted''', e.message)
 
         self.assertEqual(_id1, _id2)

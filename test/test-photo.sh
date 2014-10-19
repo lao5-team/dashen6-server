@@ -1,6 +1,9 @@
 #! /bin/sh
+#
+# author: yafei
+# photo functional tests
 
-
+cd $(dirname $0)
 . ../common.sh
 port=8080
 url="http://localhost:$port"
@@ -9,8 +12,6 @@ if test $yes != "1"; then
     echo "Port $port is not open."
     exit 1
 fi
-
-set -e
 
 
 echo -e "testfile\r\ntestdata\r\n" > data

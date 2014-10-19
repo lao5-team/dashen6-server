@@ -259,9 +259,11 @@ class DB:
             {"result":"success","id":"xxx"}
     2.改
         参数
+            action=set&table=[table]
             action=set&table=[table]&id=[id]
+            如果传入了id参数,则将更新对应的记录,否则新插入一条记录
         POST数据
-            为此id对应的数据,它将被保存到数据库
+            为数据,它将被保存到数据库
         正常情况下返回返回status code "200 OK"
         结果格式如下:
             {"result":"success","id":"xxx"}
@@ -314,13 +316,18 @@ class DB:
             elif action == 'set':
                 _id = qs_dict.get('id')
                 data = web.data()
-                if not _id or not data:
+                if not data:
                     set_status_code(web, 400)
-                    return result_template('''Illegal parameters: no "id" nor "data"''')
-                _id = ''.join(_id)
-                if debug:
-                    web.debug('DB action=set, table=%s, id=%s' % (table, _id))
-                _id = db.save(table, _id, {'data': data})
+                    return result_template('''Illegal parameters: no "data"''')
+                if _id:
+                    _id = ''.join(_id)
+                    if debug:
+                        web.debug('DB action=set, table=%s, id=%s' % (table, _id))
+                    _id = db.save(table, _id, {'data': data})
+                else:
+                    if debug:
+                        web.debug('DB action=set, table=%s' % table)
+                    _id = db.new_and_save(table, {'data': data})
                 return id_template(_id)
             elif action == 'get':
                 _id = qs_dict.get('id')

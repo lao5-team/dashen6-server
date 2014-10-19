@@ -88,6 +88,17 @@ class DBOp:
                 return str(_id)
         raise Exception('''Couldn't save id=%s, it doesn't exist.''' % _id)
 
+    def new_and_save(self, table, data_map):
+        """
+        在table中,创建数据,返回id
+        """
+        table = self.get_safe_table(table)
+        data_map['status'] = STATUS_OK
+        post = table.insert(data_map)
+        if post:
+            return str(post)
+        raise Exception('''Couldn't create new id and data record.''')
+
     def load(self, table, _id, fields=None):
         """
         在table中,读取_id的数据并返回
