@@ -1,2 +1,2 @@
-python %~dp0..\gateway.py
+python %~dp0..\py\gateway.py
 pause

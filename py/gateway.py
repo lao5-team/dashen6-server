@@ -9,19 +9,10 @@ import urlparse
 from db_op import DBOp
 from gateway_config import *
 
-urls = (
-    '/login', 'Login',
-    '/newid', 'NewId',
-    '/saveid', 'SaveId',
-    '/loadid', 'LoadId',
-)
-app = web.application(urls, globals())
 USER = 'user'
 TOKEN = 'token'
 ID = 'id'
-
-db = DBOp()
-
+db = None
 statusMap = {400: '400 Bad Request',
              401: '401 Unauthorized',
              500: '500 Internal Server Error'}
@@ -252,4 +243,12 @@ class LoadId:
 
 
 if __name__ == '__main__':
+    db = DBOp()
+    urls = (
+        '/login', 'Login',
+        '/newid', 'NewId',
+        '/saveid', 'SaveId',
+        '/loadid', 'LoadId',
+    )
+    app = web.application(urls, globals())
     app.run()

@@ -6,13 +6,7 @@
 import os
 
 from com.hws.s3.client.huawei_s3 import HuaweiS3
-from com.hws.s3.models.owner import Owner
 from com.hws.s3.models.s3object import S3Object
-from com.hws.s3.models.grantee import Grantee
-from com.hws.s3.models.grantee import Group
-from com.hws.s3.models.grant import Grant
-from com.hws.s3.models.grant import Permission
-from com.hws.s3.models.acl import ACL
 
 
 def hws_test():
