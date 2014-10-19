@@ -111,9 +111,36 @@ class Upload:
             return exception_template(e)
 
 
+class UploadFile:
+    def GET(self):
+        return """<html>
+<head>
+<title>Upload File</title>
+</head>
+<body>
+<form method="POST" enctype="multipart/form-data" action="">
+<input type="file" name="myfile"/><br/>
+<input type="submit"/>
+</form>
+</body>
+</html>"""
+
+    def POST(self):
+        x = web.input(myfile={})
+        filename = x['myfile'].filename
+        data = x['myfile'].value
+        try:
+            url = hws_upload(filename, data)
+            return url_template(url)
+        except Exception, e:
+            set_status_code(web, 500)
+            return exception_template(e)
+
+
 if __name__ == '__main__':
     initialize_bucket()
     urls = (
+        '/upload_file', 'UploadFile',
         '/upload', 'Upload',
     )
     app = web.application(urls, globals())
