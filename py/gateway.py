@@ -287,11 +287,11 @@ class DB:
     def POST(self):
         web.header('Content-Type', 'text/json')
 
-        # cookie = web.cookies()
-        # login, user, token = check_login(cookie)
-        # if not login:
-        # set_status_code(web, 401)
-        # return not_login_template()
+        cookie = web.cookies()
+        login, user, token = check_login(cookie)
+        if not login:
+            set_status_code(web, 401)
+            return not_login_template()
 
         qs = web.ctx.env.get('QUERY_STRING')
         if not qs:
