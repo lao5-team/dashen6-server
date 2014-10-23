@@ -354,12 +354,14 @@ class DB:
                 return id_template(_id)
             elif action == 'set_user':
                 username = qs_dict.get('username')
-                data = web.data()
                 if not username:
                     set_status_code(web, 400)
                     return result_template('''Illegal parameters: no "username"''')
+                username = ''.join(username)
+
+                data = web.data()
                 if debug:
-                    web.debug('DB action=get, username=%s' % (username))
+                    web.debug('DB action=set_user, username=%s' % (username))
                 username = db.set_user(username, {'data': data})
                 return username
                 
@@ -368,6 +370,8 @@ class DB:
                 if not username:
                     set_status_code(web, 400)
                     return result_template('''Illegal parameters: no "username"''')
+                username = ''.join(username)
+
                 if debug:
                     web.debug('DB action=get_user, username=%s' % (username))
                 data = db.load_user(username)
