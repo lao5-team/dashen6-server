@@ -62,6 +62,9 @@ def id_data_template(_id, data):
     template = '{"result":"success","id":"%s","data":%s}'
     return template % (_id, data)
 
+def username_data_template(username, data):
+    template = '{"result":"success","username":"%s","data":%s}'
+    return template % (username, data)
 
 def exception_template(e):
     template = '{"result":"exception occurred","exception":"%s"}'
@@ -349,6 +352,26 @@ class DB:
                     web.debug('DB action=del, table=%s, id=%s' % (table, _id))
                 db.delete(table, _id)
                 return id_template(_id)
+            elif action == 'set_user':
+                username = qs_dict.get('username')
+                data = web.data()
+                if not username:
+                    set_status_code(web, 400)
+                    return result_template('''Illegal parameters: no "username"''')
+                if debug:
+                    web.debug('DB action=get, username=%s' % (username))
+                username = db.set_user(username, {'data': data})
+                return username
+                
+            elif action == 'get_user':
+                username = qs_dict.get('username')
+                if not username:
+                    set_status_code(web, 400)
+                    return result_template('''Illegal parameters: no "username"''')
+                if debug:
+                    web.debug('DB action=get_user, username=%s' % (username))
+                data = db.load_user(username)
+                return username_data_template(username, data['data'])    
             else:
                 return result_template('''Illegal parameters: "action=%s"''' % action)
         except Exception, e:

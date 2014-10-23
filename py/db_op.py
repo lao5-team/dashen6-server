@@ -17,6 +17,7 @@ class DBOp:
         self.connection = pymongo.Connection(db_hostname, db_port)
         self.db = self.connection[db_name]
         self.user = self.db[db_user_table]
+        self.user.ensure_index('username', unique=True)
         self.activity = self.db[db_activity_table]
         self.unit_test = self.db[db_unit_test_table]
         self.TABLE_MAP = {
@@ -88,6 +89,7 @@ class DBOp:
                 return str(_id)
         raise Exception('''Couldn't save id=%s, it doesn't exist.''' % _id)
 
+
     def new_and_save(self, table, data_map):
         """
         在table中,创建数据,返回id
@@ -98,7 +100,24 @@ class DBOp:
         if post:
             return str(post)
         raise Exception('''Couldn't create new id and data record.''')
+    
 
+    def save_user(self, username, data_map):
+        """
+        在table user中，创建数据，并返回username
+        """
+        table = self.get_safe_table(db_user_table)
+        data_map['status'] = STATUS_OK
+        post = table.find_and_modify(
+            query={'username': username},
+            update={'$set': data_map},
+            fields=['username'])
+        if post:
+            username = post.get('username')
+            if username:
+                return username
+        raise Exception('''Couldn't save user with username=%s, it doesn't exist.''' % usernamed)
+    
     def load(self, table, _id, fields=None):
         """
         在table中,读取_id的数据并返回
@@ -110,6 +129,19 @@ class DBOp:
         if not post.get('data'):
             raise Exception('''Couldn't load data for id=%s, it is a newly created id.''' % _id)
         return post
+    
+    def load_user(self, username, fields=None):
+        """
+        在table user中,读取username的数据并返回$
+        """
+        table = self.get_safe_table(db_user_table)
+        post = table.find_one({'username': username, 'status': STATUS_OK}, fields=fields)
+        if post is None:
+            raise Exception('''Couldn't load username=%s, it doesn't exist or deleted.''' % username)
+        if not post.get('data'):
+            raise Exception('''Couldn't load data for username=%s.''' % _id)
+        return post
+
 
     def delete(self, table, _id):
         """
@@ -127,6 +159,36 @@ class DBOp:
             if _id:
                 return str(_id)
         raise Exception('''Couldn't delete id=%s, it doesn't exist.''' % _id)
+
+    def set_user(self, username, data_map):
+        """
+        在table user中，创建数据，并返回username
+        """
+        table = self.get_safe_table(db_user_table)
+        post = table.find_and_modify(
+            query={'username': username},
+            update={'$set': data_map},
+            upsert=True,
+            fields={'username': True, '_id': False}
+            )
+        if post:
+            username = post.get('username')
+            if username:
+                return username
+        raise Exception('''Couldn't save user with username=%s, it doesn't exist.''' % username)
+
+    def load_user(self, username, fields=None):
+        """
+        在table user中,读取username的数据并返回$
+        """
+        table = self.get_safe_table(db_user_table)
+        post = table.find_one({'username': username}, fields=fields)
+        if post is None:
+            raise Exception('''Couldn't load username=%s, it doesn't exist or deleted.''' % username)
+        if not post.get('data'):
+            raise Exception('''Couldn't load data for username=%s.''' % username)
+        return post
+
 
     def push(self, table, _ids, field, values):
         """
