@@ -63,6 +63,7 @@ def id_data_template(_id, data):
     return template % (_id, data)
 
 def username_data_template(username, data):
+    # TODO
     template = '{"result":"success","username":"%s","data":%s}'
     return template % (username, data)
 
@@ -360,11 +361,13 @@ class DB:
                 username = ''.join(username)
 
                 data = web.data()
+                # TODO
+
                 if debug:
                     web.debug('DB action=set_user, username=%s' % (username))
+
                 username = db.set_user(username, {'data': data})
                 return username
-                
             elif action == 'get_user':
                 username = qs_dict.get('username')
                 if not username:
@@ -374,8 +377,10 @@ class DB:
 
                 if debug:
                     web.debug('DB action=get_user, username=%s' % (username))
+
                 data = db.load_user(username)
-                return username_data_template(username, data['data'])    
+                # TODO
+                return username_data_template(username, data['data'])
             else:
                 return result_template('''Illegal parameters: "action=%s"''' % action)
         except Exception, e:
