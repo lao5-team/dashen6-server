@@ -5,7 +5,7 @@
 # HTTP Gateway
 
 import pymongo
-
+from bson.objectid import ObjectId
 con = pymongo.Connection('localhost', 27017)
 db = con['db']
 activity = db['user']
