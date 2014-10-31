@@ -20,10 +20,12 @@ class DBOp:
         self.user.ensure_index('username', unique=True)
         self.activity = self.db[db_activity_table]
         self.unit_test = self.db[db_unit_test_table]
+        self.user_activity = self.db[db_user_activity_table]
         self.TABLE_MAP = {
             db_user_table: self.user,
             db_activity_table: self.activity,
             db_unit_test_table: self.unit_test,
+            db_user_activity_table: self.user_activity
         }
         self.VALID_TABLES = self.TABLE_MAP.keys()
 
@@ -215,3 +217,34 @@ class DBOp:
                 fields=['_id'],
                 upsert=True
             )
+
+    def add_user_activity(self, _ids, field, activity):
+        """
+        在user_activity 集合中，对应的field字段，添加一条或多条活动数据
+        :param _ids:
+        :param field:
+        :param values:
+        :return:
+        """
+        self.push(db_user_activity_table, _ids, field, activity)
+
+    def remove_user_activity(self, _ids, field, activity):
+        """
+        在user_activity 集合中，对应的field字段，移除一条或多条数据
+        :param _ids:
+        :param field:
+        :param values:
+        :return:
+        """
+        self.pop(db_user_activity_table, _ids, field, activity)
+
+    def get_user_activity(self, user_id, fields=None):
+        """
+        在user_activity 集合中，获取其所有的activity id，即doing_activity, finish_activity
+        :return:
+        """
+        table = self.get_safe_table(db_user_activity_table)
+        post = table.find_one({'_id': user_id}, fields=fields)
+        if post is None:
+            raise Exception('''Couldn't load user_id=%s, it doesn't exist or deleted.''' % username)
+        return post
