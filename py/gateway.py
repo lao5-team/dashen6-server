@@ -500,7 +500,7 @@ class DB:
             else:
                 return result_template('''Illegal parameters: "action=%s"''' % action)
         except Exception, e:
-            web.debug(str(e))
+            web.debug(e)
             set_status_code(web, 500)
             return exception_template(e)
 
