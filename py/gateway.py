@@ -485,8 +485,8 @@ class DB:
                 activity_id = ''.join(activity_id)
                 if debug:
                     web.debug('DB action=move_user_activity, user_id=%s, field_source=%s, field_dest=%s, activity_id=%s' % (user_id, field_source, field_dest, activity_id))
-                db.remove_user_activity(user_id, field_dest, activity_id)
-                db.add_user_activity(user_id, field_source, activity_id)
+                db.remove_user_activity(user_id, field_source, activity_id)
+                db.add_user_activity(user_id, field_dest, activity_id)
                 data = db.get_user_activity(user_id)
                 return user_activity_template(user_id, data['doing_activity'], data['finish_activity'])
 
