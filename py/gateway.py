@@ -499,7 +499,11 @@ class DB:
                 if debug:
                     web.debug('DB action=get_user_activity, user_id=%s' % user_id)
                 data = db.get_user_activity(user_id)
-                return user_activity_template(user_id, data['doing_activity'], data['finish_activity'])
+                if 'doing_activity' in data:
+                    doing_activity = data['doing_activity']
+                if 'finish_activity' in data:
+                    finish_activity = data[ 'finish_activity']
+                return user_activity_template(user_id, doing_activity, finish_activity)
             else:
                 return result_template('''Illegal parameters: "action=%s"''' % action)
         except Exception, e:
