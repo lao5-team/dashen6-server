@@ -36,3 +36,8 @@ db_activity_table = 'activity'
 单元测试使用的表名
 """
 db_unit_test_table = 'ut'
+
+"""
+mongodb的"用户，活动"表名
+"""
+db_user_activity_table = 'user_activity'
