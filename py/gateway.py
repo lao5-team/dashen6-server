@@ -69,6 +69,10 @@ def username_data_template(username, data):
 
 def user_activity_template(username, doing_activity, finish_activity):
     template = '{"result":"success","username":"%s","doing_activity":%s","finish_activity":%s}'
+    if doing_activity is None:
+        doing_activity = ''
+    if finish_activity is None:
+        finish_activity = ''
     return template % (username, str(doing_activity), str(finish_activity))
 
 def exception_template(e):
