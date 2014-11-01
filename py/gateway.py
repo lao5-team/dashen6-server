@@ -323,7 +323,6 @@ class DB:
     def __init__(self):
         pass
 
-    @property
     def POST(self):
         web.header('Content-Type', 'text/json')
 
@@ -500,7 +499,7 @@ class DB:
             else:
                 return result_template('''Illegal parameters: "action=%s"''' % action)
         except Exception, e:
-            web.debug(e)
+            web.debug(str(e))
             set_status_code(web, 500)
             return exception_template(e)
 
