@@ -68,7 +68,7 @@ def username_data_template(username, data):
     return template % (username, data)
 
 def user_activity_template(username, doing_activity, finish_activity):
-    template = '{"result":"success","username":"%s","doing_activity":%s","finish_activity":%s}'
+    template = '{"result":"success","username":"%s","doing_activity":"%s","finish_activity":"%s"}'
     if doing_activity is None:
         doing_activity = ''
     if finish_activity is None:
