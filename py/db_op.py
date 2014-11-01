@@ -245,6 +245,10 @@ class DBOp:
         """
         table = self.get_safe_table(db_user_activity_table)
         post = table.find_one({'_id': ObjectId(user_id)}, fields=fields)
+        if not 'doing_activity' in post:
+            post['doing_activity'] = ''
+        if not 'finish_activity' in post:
+            post['finish_activity'] = ''
         if post is None:
             raise Exception('''Couldn't load user_id=%s, it doesn't exist or deleted.''' % user_id)
         return post
