@@ -434,7 +434,7 @@ class DB:
                     web.debug('DB action=add_user_activity, user_id=%s, field=%s, activity_id=%s' % (user_id, field, activity_id))
                 db.add_user_activity(user_id, field, activity_id)
                 data = db.get_user_activity(user_id)
-                return user_activity_template(username, data['doing_activity'], data['finish_activity'])
+                return user_activity_template(user_id, data['doing_activity'], data['finish_activity'])
 
             elif action == 'remove_user_activity':
                 user_id = qs_dict.get('user_id')
@@ -456,7 +456,7 @@ class DB:
                     web.debug('DB action=remove_user_activity, user_id=%s, field=%s, activity_id=%s' % (user_id, field, activity_id))
                 db.remove_user_activity(user_id, field, activity_id)
                 data = db.get_user_activity(user_id)
-                return user_activity_template(username, data['doing_activity'], data['finish_activity'])
+                return user_activity_template(user_id, data['doing_activity'], data['finish_activity'])
 
             elif action == 'move_user_activity':
                 user_id = qs_dict.get('user_id')
@@ -484,7 +484,7 @@ class DB:
                 db.remove_user_activity(user_id, field_dest, activity_id)
                 db.add_user_activity(user_id, field_source, activity_id)
                 data = db.get_user_activity(user_id)
-                return user_activity_template(username, data['doing_activity'], data['finish_activity'])
+                return user_activity_template(user_id, data['doing_activity'], data['finish_activity'])
 
             elif action == 'get_user_activity':
                 user_id = qs_dict.get('user_id')
@@ -495,7 +495,7 @@ class DB:
                 if debug:
                     web.debug('DB action=get_user_activity, user_id=%s' % user_id)
                 data = db.get_user_activity(user_id)
-                return user_activity_template(username, data['doing_activity'], data['finish_activity'])
+                return user_activity_template(user_id, data['doing_activity'], data['finish_activity'])
             else:
                 return result_template('''Illegal parameters: "action=%s"''' % action)
         except Exception, e:
