@@ -246,5 +246,5 @@ class DBOp:
         table = self.get_safe_table(db_user_activity_table)
         post = table.find_one({'_id': user_id}, fields=fields)
         if post is None:
-            raise Exception('''Couldn't load user_id=%s, it doesn't exist or deleted.''' % username)
+            raise Exception('''Couldn't load user_id=%s, it doesn't exist or deleted.''' % user_id)
         return post
