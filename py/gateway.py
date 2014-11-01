@@ -67,6 +67,10 @@ def username_data_template(username, data):
     template = '{"result":"success","username":"%s","data":%s}'
     return template % (username, data)
 
+def user_activity_template(username, doing_activity, finish_activity):
+    template = '{"result":"success","username":"%s","doing_activity":%s","finish_activity":%s}'
+    return template % (username, str(doing_activity), str(finish_activity))
+
 def exception_template(e):
     template = '{"result":"exception occurred","exception":"%s"}'
     return template % str(e)
@@ -283,11 +287,43 @@ class DB:
         正常情况下返回返回status code "200 OK"
         结果格式如下:
             {"result":"success","id":"xxx"}
+     5.创建或者设置用户
+        参数
+            action=set_user&username=[username]
+        正常情况下返回返回status code "200 OK"
+        结果格式如下:
+        {username}
+     6.读取用户
+        参数
+            action=get_user&username=[username]
+        正常情况下返回返回status code "200 OK"
+        结果格式如下:
+           {"result":"success","username":"%s","data":%s}
+    7  增加用户某一类的活动数据
+       参数
+            action=add_user_activity&user_id=[user_id]&field=[field]&activity_id=[activity_id]
+        正常情况下返回返回status code "200 OK"
+    8  减少用户某一类的活动数据
+        参数
+            action=remove_user_activity&user_id=[user_id]&field=[field]&activity_id=[activity_id]
+        正常情况下返回返回status code "200 OK"
+    9  移动用户某一类的活动数据到另一类
+        参数
+            action=move_user_activity&user_id=[user_id]&field_source=[field_source]&field_dest=[field_dest]
+            &&activity_id=[activity_id]
+        正常情况下返回返回status code "200 OK"
+    10  读取用户的活动数据
+        参数
+            action=get_user_activity&user_id=[user_id]
+        正常情况下返回返回status code "200 OK"
+        结果格式如下:
+        {username}
     """
 
     def __init__(self):
         pass
 
+    @property
     def POST(self):
         web.header('Content-Type', 'text/json')
 
@@ -364,8 +400,7 @@ class DB:
                 # TODO
 
                 if debug:
-                    web.debug('DB action=set_user, username=%s' % (username))
-
+                    web.debug('DB action=set_user, username=%s' % username)
                 username = db.set_user(username, {'data': data})
                 return username
             elif action == 'get_user':
@@ -376,11 +411,92 @@ class DB:
                 username = ''.join(username)
 
                 if debug:
-                    web.debug('DB action=get_user, username=%s' % (username))
-
+                    web.debug('DB action=get_user, username=%s' % username)
                 data = db.load_user(username)
-                # TODO
                 return username_data_template(username, data['data'])
+
+            elif action == 'add_user_activity':
+                user_id = qs_dict.get('user_id')
+                if not user_id:
+                    set_status_code(web, 400)
+                    return result_template('''Illegal parameters: no "user_id"''')
+                user_id = ''.join(user_id)
+                field = qs_dict.get('field')
+                if not field:
+                    set_status_code(web, 400)
+                    return result_template('''Illegal parameters: no "field"''')
+                field = ''.join(field)
+                activity_id = qs_dict.get('activity_id')
+                if not activity_id:
+                    set_status_code(web, 400)
+                    return result_template('''Illegal parameters: no "activity_id"''')
+                activity_id = ''.join(activity_id)
+                if debug:
+                    web.debug('DB action=add_user_activity, user_id=%s, field=%s, activity_id=%s' % (user_id, field, activity_id))
+                db.add_user_activity(user_id, field, activity_id)
+                data = db.get_user_activity(user_id)
+                return user_activity_template(username, data['doing_activity'], data['finish_activity'])
+
+            elif action == 'remove_user_activity':
+                user_id = qs_dict.get('user_id')
+                if not user_id:
+                    set_status_code(web, 400)
+                    return result_template('''Illegal parameters: no "user_id"''')
+                user_id = ''.join(user_id)
+                field = qs_dict.get('field')
+                if not field:
+                    set_status_code(web, 400)
+                    return result_template('''Illegal parameters: no "field"''')
+                field = ''.join(field)
+                activity_id = qs_dict.get('activity_id')
+                if not activity_id:
+                    set_status_code(web, 400)
+                    return result_template('''Illegal parameters: no "activity_id"''')
+                activity_id = ''.join(activity_id)
+                if debug:
+                    web.debug('DB action=remove_user_activity, user_id=%s, field=%s, activity_id=%s' % (user_id, field, activity_id))
+                db.remove_user_activity(user_id, field, activity_id)
+                data = db.get_user_activity(user_id)
+                return user_activity_template(username, data['doing_activity'], data['finish_activity'])
+
+            elif action == 'move_user_activity':
+                user_id = qs_dict.get('user_id')
+                if not user_id:
+                    set_status_code(web, 400)
+                    return result_template('''Illegal parameters: no "user_id"''')
+                user_id = ''.join(user_id)
+                field_source = qs_dict.get('field_source')
+                if not field_source:
+                    set_status_code(web, 400)
+                    return result_template('''Illegal parameters: no "field_source"''')
+                field_source = ''.join(field_source)
+                field_dest = qs_dict.get('field_dest')
+                if not field_dest:
+                    set_status_code(web, 400)
+                    return result_template('''Illegal parameters: no "field_dest"''')
+                field_dest = ''.join(field_dest)
+                activity_id = qs_dict.get('activity_id')
+                if not activity_id:
+                    set_status_code(web, 400)
+                    return result_template('''Illegal parameters: no "activity_id"''')
+                activity_id = ''.join(activity_id)
+                if debug:
+                    web.debug('DB action=move_user_activity, user_id=%s, field_source=%s, field_dest=%s, activity_id=%s' % (user_id, field_source, field_dest, activity_id))
+                db.remove_user_activity(user_id, field_dest, activity_id)
+                db.add_user_activity(user_id, field_source, activity_id)
+                data = db.get_user_activity(user_id)
+                return user_activity_template(username, data['doing_activity'], data['finish_activity'])
+
+            elif action == 'get_user_activity':
+                user_id = qs_dict.get('user_id')
+                if not user_id:
+                    set_status_code(web, 400)
+                    return result_template('''Illegal parameters: no "user_id"''')
+                user_id = ''.join(user_id)
+                if debug:
+                    web.debug('DB action=get_user_activity, user_id=%s' % user_id)
+                data = db.get_user_activity(user_id)
+                return user_activity_template(username, data['doing_activity'], data['finish_activity'])
             else:
                 return result_template('''Illegal parameters: "action=%s"''' % action)
         except Exception, e:
