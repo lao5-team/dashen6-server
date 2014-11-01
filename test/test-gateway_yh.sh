@@ -31,6 +31,7 @@ CheckNotEmpty "$r" "login 3"
 user_data=$(curl -v "${url}/db?action=get_user&username=yihao" -b cookie -d dummy 2>stderr)
 r=$(cat stderr | grep " 200 OK")
 CheckNotEmpty "$user_data" "get_user"
+echo $user_data
 
 data=$(curl -v "${url}/db?action=add_user_activity&field=doing&activity_id=activity0" -b cookie -d dummy 2>stderr)
 r=$(cat stderr | grep " 200 OK")
