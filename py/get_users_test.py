@@ -12,7 +12,6 @@ con = pymongo.Connection('localhost', 27017)
 db = con['db']
 user = db['user']
 user_activity = db['user_activity']
-user.remove({"username":"kimi1"})
 
 for item in user.find():
     print item
