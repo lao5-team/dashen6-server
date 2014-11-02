@@ -62,10 +62,10 @@ def id_data_template(_id, data):
     template = '{"result":"success","id":"%s","data":%s}'
     return template % (_id, data)
 
-def username_data_template(username, data):
+def username_data_template(username, data, _id):
     # TODO
-    template = '{"result":"success","username":"%s","data":%s}'
-    return template % (username, data)
+    template = '{"result":"success", "username":"%s", "data":%s, "_id":"%s"}'
+    return template % (username, data, _id)
 
 def user_activity_template(username, doing_activity, finish_activity):
     template = '{"result":"success","username":"%s","doing_activity":"%s","finish_activity":"%s"}'
@@ -416,7 +416,7 @@ class DB:
                 if debug:
                     web.debug('DB action=get_user, username=%s' % username)
                 data = db.load_user(username)
-                return username_data_template(username, data['data'])
+                return username_data_template(username, data['data'], data['_id'])
 
             elif action == 'add_user_activity':
                 user_id = qs_dict.get('user_id')
