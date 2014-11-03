@@ -226,6 +226,7 @@ class DBOp:
         :param values:
         :return:
         """
+        activity = str(activity)
         self.push(db_user_activity_table, _ids, field, activity)
 
     def remove_user_activity(self, _ids, field, activity):
@@ -236,6 +237,7 @@ class DBOp:
         :param values:
         :return:
         """
+        activity = str(activity)
         self.pop(db_user_activity_table, _ids, field, activity)
 
     def get_user_activity(self, user_id, fields=None):
