@@ -70,6 +70,8 @@ def username_data_template(username, data, _id):
 def user_activity_template(username, doing_activity, finish_activity):
     for index,item in enumerate(doing_activity):
         doing_activity[index] = str(doing_activity[index])
+    for index,item in enumerate(finish_activity):
+        finish_activity[index] = str(finish_activity[index])
     template = '{"result":"success","username":"%s","doing_activity":%s,"finish_activity":%s}'
     if doing_activity is None:
         doing_activity = ''
