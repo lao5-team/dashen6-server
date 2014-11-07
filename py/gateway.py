@@ -509,6 +509,25 @@ class DB:
                     web.debug('DB action=get_user_activity, user_id=%s' % user_id)
                 data = db.get_user_activity(user_id)
                 return user_activity_template(user_id, data['doing_activity'], data[ 'finish_activity'])
+
+            elif action == 'add_user_message':
+                user_id = qs_dict.get('user_id')
+                if not user_id:
+                    set_status_code(web, 400)
+                    return result_template('''Illegal parameters: no "user_id"''')
+                user_id = ''.join(user_id)
+                """
+                field = qs_dict.get('field')
+                if not field:
+                    set_status_code(web, 400)
+                    return result_template('''Illegal parameters: no "field"''')
+                field = ''.join(field)
+                """
+                if debug:
+                    web.debug('DB action=add_user_activity, user_id=%s, field=%s' % (user_id, field))
+                data = web.data()
+                db.add_user_message(user_id, data)
+                return ''
             else:
                 return result_template('''Illegal parameters: "action=%s"''' % action)
         except Exception, e:
