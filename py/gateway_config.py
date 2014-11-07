@@ -41,3 +41,8 @@ db_unit_test_table = 'ut'
 mongodb的"用户，活动"表名
 """
 db_user_activity_table = 'user_activity'
+
+"""
+mongodb的"用户，消息"表名
+"""
+db_user_message_table = 'user_message'

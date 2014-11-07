@@ -21,11 +21,13 @@ class DBOp:
         self.activity = self.db[db_activity_table]
         self.unit_test = self.db[db_unit_test_table]
         self.user_activity = self.db[db_user_activity_table]
+        self.user_message = self.db[db_user_message_table]
         self.TABLE_MAP = {
             db_user_table: self.user,
             db_activity_table: self.activity,
             db_unit_test_table: self.unit_test,
-            db_user_activity_table: self.user_activity
+            db_user_activity_table: self.user_activity,
+            db_user_message_table: self.user_message
         }
         self.VALID_TABLES = self.TABLE_MAP.keys()
 
@@ -251,6 +253,37 @@ class DBOp:
             post['doing_activity'] = []
         if not 'finish_activity' in post:
             post['finish_activity'] = []
+        if post is None:
+            raise Exception('''Couldn't load user_id=%s, it doesn't exist or deleted.''' % user_id)
+        return post
+
+    def add_user_message(self, _ids, data):
+        """
+        在user_message 集合中，对应的field字段，移除一条或多条message
+        :param _ids:
+        :param data: 消息数据
+        :return:
+        """
+        data = str(data)
+        self.push(db_user_message_table, _ids, "message", data)
+
+    def remove_user_message(self, _ids, field, data):
+        """
+        在user_message 集合中，对应的field字段，移除一条或多条message
+        :param _ids:
+        :param data: 消息数据
+        :return:
+        """
+        data = str(data)
+        self.pop(db_user_message_table, _ids, "message", data)
+
+    def get_user_message(self, user_id, fields=None):
+        """
+        在user_message 集合中，获取其所有的message
+        :return:
+        """
+        table = self.get_safe_table(db_user_message_table)
+        post = table.find_one({'_id': ObjectId(user_id)}, fields=fields)
         if post is None:
             raise Exception('''Couldn't load user_id=%s, it doesn't exist or deleted.''' % user_id)
         return post

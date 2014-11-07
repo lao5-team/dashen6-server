@@ -67,6 +67,11 @@ def username_data_template(username, data, _id):
     template = '{"result":"success", "username":"%s", "data":%s, "_id":"%s"}'
     return template % (username, data, _id)
 
+def message_template(_id, data):
+    # TODO
+    template = '{"result":"success", "_id":"%s", "data":%s}'
+    return template % (_id, data)
+
 def user_activity_template(username, doing_activity, finish_activity):
     for index,item in enumerate(doing_activity):
         doing_activity[index] = str(doing_activity[index])
