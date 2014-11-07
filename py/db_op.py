@@ -267,7 +267,7 @@ class DBOp:
         data = str(data)
         self.push(db_user_message_table, _ids, "message", data)
 
-    def remove_user_message(self, _ids, field, data):
+    def remove_user_message(self, _ids, data):
         """
         在user_message 集合中，对应的field字段，移除一条或多条message
         :param _ids:

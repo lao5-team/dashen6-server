@@ -6,6 +6,7 @@
 import web
 import hashlib
 import urlparse
+import json
 from db_op import DBOp
 from gateway_config import *
 
@@ -73,16 +74,18 @@ def message_template(_id, data):
     return template % (_id, data)
 
 def user_activity_template(username, doing_activity, finish_activity):
+    """
     for index,item in enumerate(doing_activity):
         doing_activity[index] = str(doing_activity[index])
     for index,item in enumerate(finish_activity):
         finish_activity[index] = str(finish_activity[index])
+    """
     template = '{"result":"success","username":"%s","doing_activity":%s,"finish_activity":%s}'
     if doing_activity is None:
         doing_activity = ''
     if finish_activity is None:
         finish_activity = ''
-    return template % (username, str(doing_activity), str(finish_activity))
+    return template % (username, json.dumps(doing_activity), json.dumps(finish_activity))
 
 def exception_template(e):
     template = '{"result":"exception occurred","exception":"%s"}'
@@ -516,17 +519,31 @@ class DB:
                     set_status_code(web, 400)
                     return result_template('''Illegal parameters: no "user_id"''')
                 user_id = ''.join(user_id)
-                """
-                field = qs_dict.get('field')
-                if not field:
-                    set_status_code(web, 400)
-                    return result_template('''Illegal parameters: no "field"''')
-                field = ''.join(field)
-                """
                 if debug:
-                    web.debug('DB action=add_user_activity, user_id=%s, field=%s' % (user_id, field))
+                    web.debug('DB action=add_user_message, user_id=%s' % (user_id))
                 data = web.data()
                 db.add_user_message(user_id, data)
+                return ''
+            elif action == 'get_user_message':
+                user_id = qs_dict.get('user_id')
+                if not user_id:
+                    set_status_code(web, 400)
+                    return result_template('''Illegal parameters: no "user_id"''')
+                user_id = ''.join(user_id)
+                if debug:
+                    web.debug('DB action=get_user_message, user_id=%s' % (user_id))
+                data = db.get_user_message(user_id)
+                return message_template(user_id, json.dumps(data['message']))
+            elif action == 'remove_user_message':
+                user_id = qs_dict.get('user_id')
+                if not user_id:
+                    set_status_code(web, 400)
+                    return result_template('''Illegal parameters: no "user_id"''')
+                user_id = ''.join(user_id)
+                if debug:
+                    web.debug('DB action=get_user_message, user_id=%s' % (user_id))
+                data = web.data()
+                db.remove_user_message(user_id, data)
                 return ''
             else:
                 return result_template('''Illegal parameters: "action=%s"''' % action)
