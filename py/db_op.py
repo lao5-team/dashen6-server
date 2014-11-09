@@ -277,6 +277,7 @@ class DBOp:
         :param data: message 数据
         :return: message id
         """
+        self.web.debug('add_message')
         id = self.new_and_save(db_message_table, data)
         return id
 
@@ -287,6 +288,7 @@ class DBOp:
         :param data: 消息数据
         :return:
         """
+        self.web.debug('add_user_message')
         id = self.add_message(data)
         self.push(db_user_message_table, _ids, "user_message", id)
 
@@ -313,5 +315,5 @@ class DBOp:
             message = db_message_table.find_one({'_id': ObjectId(message_id)}, fields=fields)
             result = result + message + ' ,'
         result[len(result)-1] = ']'
-        web.debug(result)
+        self.web.debug(result)
         return result
