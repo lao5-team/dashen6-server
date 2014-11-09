@@ -543,7 +543,8 @@ class DB:
                 if debug:
                     web.debug('DB action=get_user_message, user_id=%s' % (user_id))
                 data = web.data()
-                db.remove_user_message(user_id, data)
+                list1 = json.loads(data);
+                db.remove_user_message(user_id, list1, web)
                 return ''
             else:
                 return result_template('''Illegal parameters: "action=%s"''' % action)
@@ -564,3 +565,4 @@ if __name__ == '__main__':
     )
     app = web.application(urls, globals())
     app.run()
+#    db.remove_user_message('5456478e1ef08c418fc9f726', ['{"action":"invite","type":"activity","activity_name":"war3 2v2","from":{"imgUrl":"","sex":"male","name":"kimi"}}'])

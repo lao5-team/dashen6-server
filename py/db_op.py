@@ -192,15 +192,18 @@ class DBOp:
                 upsert=True
             )
 
-    def pop(self, table, _ids, field, values):
+    def pop(self, table, _ids, field, values, web):
         """
         在table中,从_ids的field字段对应的队列中中删除一条或多条数据
         """
         table = self.get_safe_table(table)
+        web.debug(values)
         if isinstance(values, list):
             update = {'$pullAll': {field: values}}
+            web.debug('values is list')
         elif isinstance(values, str):
             update = {'$pullAll': {field: [values]}}
+            web.debug('values is str')
         else:
             raise TypeError('''"values" should be an instance of list or str.''')
 
@@ -264,18 +267,16 @@ class DBOp:
         :param data: 消息数据
         :return:
         """
-        data = str(data)
         self.push(db_user_message_table, _ids, "message", data)
 
-    def remove_user_message(self, _ids, data):
+    def remove_user_message(self, _ids, data, web):
         """
         在user_message 集合中，对应的field字段，移除一条或多条message
         :param _ids:
         :param data: 消息数据
         :return:
         """
-        data = str(data)
-        self.pop(db_user_message_table, _ids, "message", data)
+        self.pop(db_user_message_table, _ids, "message", data,web)
 
     def get_user_message(self, user_id, fields=None):
         """

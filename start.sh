@@ -32,7 +32,7 @@ CheckPortUp $mongodb_port
 echo "Starting gateway..."
 python py/gateway.py $gateway_port >> gateway.log 2>&1 &
 CheckPortUp $gateway_port
-
+#
 echo "Starting photo..."
 python py/photo.py $photo_port >> photo.log 2>&1 &
 CheckPortUp $photo_port
