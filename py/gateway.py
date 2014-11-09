@@ -533,7 +533,7 @@ class DB:
                 if debug:
                     web.debug('DB action=get_user_message, user_id=%s' % (user_id))
                 data = db.get_user_message(user_id)
-                return message_template(user_id, json.dumps(data['message']))
+                return message_template(user_id, json.dumps(data))
             elif action == 'remove_user_message':
                 user_id = qs_dict.get('user_id')
                 if not user_id:
@@ -563,6 +563,7 @@ if __name__ == '__main__':
         '/loadid', 'LoadId',
         '/db', 'DB',
     )
+    db.set_web(web)
     app = web.application(urls, globals())
     app.run()
 #    db.remove_user_message('5456478e1ef08c418fc9f726', ['{"action":"invite","type":"activity","activity_name":"war3 2v2","from":{"imgUrl":"","sex":"male","name":"kimi"}}'])

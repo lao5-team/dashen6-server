@@ -278,7 +278,7 @@ class DBOp:
         :return: message id
         """
         self.web.debug('add_message')
-        id = self.new_and_save(db_message_table, data)
+        id = self.new_and_save(db_message_table, {'data':data})
         return id
 
     def add_user_message(self, _ids, data):
@@ -306,14 +306,15 @@ class DBOp:
         在user_message 集合中，获取其所有的message
         :return:
         """
-        table = self.get_safe_table(db_user_message_table)
-        post = table.find_one({'_id': ObjectId(user_id)}, fields=fields)
+        #table = self.get_safe_table(db_user_message_table)
+        post = self.user_message.find_one({'_id': ObjectId(user_id)}, fields=fields)
+        self.web.debug('post is %s' % str(post))
         if post is None:
             raise Exception('''Couldn't load user_id=%s, it doesn't exist or deleted.''' % user_id)
-        result = '['
+        result = '''['''
         for message_id in post['user_message']:
-            message = db_message_table.find_one({'_id': ObjectId(message_id)}, fields=fields)
-            result = result + message + ' ,'
-        result[len(result)-1] = ']'
-        self.web.debug(result)
+            message = self.message.find_one({'_id': ObjectId(message_id)}, fields=fields)
+            result = result + str(message) + ' ,'
+        result = result[0:len(result)-1] + ']'
+        self.web.debug('result %s' % result)
         return result
