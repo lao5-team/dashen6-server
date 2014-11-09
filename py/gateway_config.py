@@ -43,6 +43,11 @@ mongodb的"用户，活动"表名
 db_user_activity_table = 'user_activity'
 
 """
+mongodb的"消息"表名
+"""
+db_message_table = 'message'
+
+"""
 mongodb的"用户，消息"表名
 """
 db_user_message_table = 'user_message'

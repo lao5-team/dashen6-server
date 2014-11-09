@@ -21,18 +21,29 @@ class DBOp:
         self.activity = self.db[db_activity_table]
         self.unit_test = self.db[db_unit_test_table]
         self.user_activity = self.db[db_user_activity_table]
+        self.message = self.db[db_message_table]
         self.user_message = self.db[db_user_message_table]
         self.TABLE_MAP = {
             db_user_table: self.user,
             db_activity_table: self.activity,
             db_unit_test_table: self.unit_test,
             db_user_activity_table: self.user_activity,
+            db_message_table: self.message,
             db_user_message_table: self.user_message
         }
         self.VALID_TABLES = self.TABLE_MAP.keys()
+        self.web = None
 
     def __del__(self):
         self.close()
+
+    def set_web(self, web):
+        """
+        设置web，以方便打印日志
+        :param web:
+        :return:
+        """
+        self.web = web
 
     def check_table(self, table):
         """
@@ -192,18 +203,18 @@ class DBOp:
                 upsert=True
             )
 
-    def pop(self, table, _ids, field, values, web):
+    def pop(self, table, _ids, field, values):
         """
         在table中,从_ids的field字段对应的队列中中删除一条或多条数据
         """
         table = self.get_safe_table(table)
-        web.debug(values)
+        #web.debug(values)
         if isinstance(values, list):
             update = {'$pullAll': {field: values}}
-            web.debug('values is list')
+            #web.debug('values is list')
         elif isinstance(values, str):
             update = {'$pullAll': {field: [values]}}
-            web.debug('values is str')
+            #web.debug('values is str')
         else:
             raise TypeError('''"values" should be an instance of list or str.''')
 
@@ -260,6 +271,15 @@ class DBOp:
             raise Exception('''Couldn't load user_id=%s, it doesn't exist or deleted.''' % user_id)
         return post
 
+    def add_message(self, data):
+        """
+        在message集合中，添加一条message
+        :param data: message 数据
+        :return: message id
+        """
+        id = self.new_and_save(db_message_table, data)
+        return id
+
     def add_user_message(self, _ids, data):
         """
         在user_message 集合中，对应的field字段，移除一条或多条message
@@ -267,16 +287,17 @@ class DBOp:
         :param data: 消息数据
         :return:
         """
-        self.push(db_user_message_table, _ids, "message", data)
+        id = self.add_message(data)
+        self.push(db_user_message_table, _ids, "message", id)
 
-    def remove_user_message(self, _ids, data, web):
+    def remove_user_message(self, _ids, message_ids):
         """
         在user_message 集合中，对应的field字段，移除一条或多条message
         :param _ids:
         :param data: 消息数据
         :return:
         """
-        self.pop(db_user_message_table, _ids, "message", data,web)
+        self.pop(db_user_message_table, _ids, "message", message_ids)
 
     def get_user_message(self, user_id, fields=None):
         """
@@ -287,4 +308,10 @@ class DBOp:
         post = table.find_one({'_id': ObjectId(user_id)}, fields=fields)
         if post is None:
             raise Exception('''Couldn't load user_id=%s, it doesn't exist or deleted.''' % user_id)
-        return post
+        result = '['
+        for message_id in post['message']:
+            message = db_message_table.find_one({'_id': ObjectId(message_id)}, fields=fields)
+            result = result + message + ' ,'
+        result[len(result)-1] = ']'
+        web.debug(result)
+        return result
