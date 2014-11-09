@@ -288,7 +288,7 @@ class DBOp:
         :return:
         """
         id = self.add_message(data)
-        self.push(db_user_message_table, _ids, "message", id)
+        self.push(db_user_message_table, _ids, "user_message", id)
 
     def remove_user_message(self, _ids, message_ids):
         """
@@ -297,7 +297,7 @@ class DBOp:
         :param data: 消息数据
         :return:
         """
-        self.pop(db_user_message_table, _ids, "message", message_ids)
+        self.pop(db_user_message_table, _ids, "user_message", message_ids)
 
     def get_user_message(self, user_id, fields=None):
         """
@@ -309,7 +309,7 @@ class DBOp:
         if post is None:
             raise Exception('''Couldn't load user_id=%s, it doesn't exist or deleted.''' % user_id)
         result = '['
-        for message_id in post['message']:
+        for message_id in post['user_message']:
             message = db_message_table.find_one({'_id': ObjectId(message_id)}, fields=fields)
             result = result + message + ' ,'
         result[len(result)-1] = ']'
