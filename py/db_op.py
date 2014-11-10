@@ -7,7 +7,7 @@ import pymongo
 from gateway_config import *
 from bson.objectid import ObjectId
 from pymongo.collection import Collection
-
+import json
 STATUS_OK = 'ok'
 STATUS_DELETED = 'deleted'
 
@@ -311,10 +311,10 @@ class DBOp:
         self.web.debug('post is %s' % str(post))
         if post is None:
             raise Exception('''Couldn't load user_id=%s, it doesn't exist or deleted.''' % user_id)
-        result = '''['''
+        result = '{"messages":['
         for message_id in post['user_message']:
-            message = self.message.find_one({'_id': ObjectId(message_id)}, fields=fields)
-            result = result + str(message) + ' ,'
-        result = result[0:len(result)-1] + ']'
+            message = self.message.find_one({'_id': ObjectId(message_id)}, fields='data')
+            result = result + json.dumps(message) + ' ,'
+        result = result[0:len(result)-1] + ']}'
         self.web.debug('result %s' % result)
         return result
