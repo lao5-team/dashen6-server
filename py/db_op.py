@@ -313,7 +313,8 @@ class DBOp:
             raise Exception('''Couldn't load user_id=%s, it doesn't exist or deleted.''' % user_id)
         result = '{"messages":['
         for message_id in post['user_message']:
-            message = self.message.find_one({'_id': ObjectId(message_id)}, fields='data')
+            message = self.message.find_one({'_id': ObjectId(message_id)}, fields={'status':False, '_id':False})
+            self.web.debug('messge %s' % str(message))
             result = result + json.dumps(message) + ' ,'
         result = result[0:len(result)-1] + ']}'
         self.web.debug('result %s' % result)
