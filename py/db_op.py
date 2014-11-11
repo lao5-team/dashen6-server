@@ -321,4 +321,5 @@ class DBOp:
             result = result + json.dumps(message) + ' ,'
         result = result[0:len(result)-1] + ']}'
         self.web.debug('result %s' % result)
+        self.pop('user_message', user_id, 'user_message', post['user_message'])
         return result
