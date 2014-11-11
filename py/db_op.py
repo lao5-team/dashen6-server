@@ -278,7 +278,9 @@ class DBOp:
         :return: message id
         """
         self.web.debug('add_message')
-        id = self.new_and_save(db_message_table, {'data':data})
+        jData = json.loads(data)
+        self.web.debug('jData is %s' % str(jData))
+        id = self.new_and_save(db_message_table, {'data':jData})
         return id
 
     def add_user_message(self, _ids, data):
@@ -315,6 +317,7 @@ class DBOp:
         for message_id in post['user_message']:
             message = self.message.find_one({'_id': ObjectId(message_id)}, fields={'status':False, '_id':False})
             self.web.debug('messge %s' % str(message))
+            message = message['data']
             result = result + json.dumps(message) + ' ,'
         result = result[0:len(result)-1] + ']}'
         self.web.debug('result %s' % result)

@@ -14,6 +14,9 @@ user = db['user']
 user_activity = db['user_activity']
 user_message = db['user_message']
 message = db['message']
+#user_message.remove()
+#message.remove()
+
 for item in user.find():
     print item
 

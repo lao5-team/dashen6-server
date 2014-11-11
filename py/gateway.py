@@ -533,7 +533,7 @@ class DB:
                 if debug:
                     web.debug('DB action=get_user_message, user_id=%s' % (user_id))
                 data = db.get_user_message(user_id)
-                return message_template(user_id, json.dumps(data))
+                return message_template(user_id, data)
             elif action == 'remove_user_message':
                 user_id = qs_dict.get('user_id')
                 if not user_id:
