@@ -22,22 +22,31 @@ activity.remove()
 user_activity.remove();
 '''
 print "user table"
+print "\n"
 for item in user.find():
     print item
+print "\n"
 
 print "activity_table"
+print "\n"
 for item in activity.find():
     print item
-
+print "\n"
 
 print "user_activity table"
+print "\n"
 for item in user_activity.find():
     print item
+print "\n"
 
 print "user_message table"
+print "\n"
 for item in user_message.find():
     print item
+print "\n"
 
 print "message table"
+print "\n"
 for item in message.find():
     print item
+print "\n"
