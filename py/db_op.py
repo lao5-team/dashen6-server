@@ -188,8 +188,8 @@ class DBOp:
         :return:
         """
         result = []
-        for item in self.activity.find(fields={'status':False, '_id':False}):
-            result.append(item)
+        for item in self.activity.find(fields={'status':False}):
+            result.append(json.dumps(item))
         return result
 
     def push(self, table, _ids, field, values):
