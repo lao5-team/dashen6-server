@@ -174,6 +174,23 @@ class DBOp:
             raise Exception('''Couldn't load data for username=%s.''' % username)
         return post
 
+    def get_activity_list_with_id(self, id_list):
+        """ 在Activity table中返回以id_list为至的Activity
+        :param id_list: id列表
+        :return:
+        """
+        result = None
+        return result
+
+    def get_all_activity(self):
+        """
+        返回所有的Activity
+        :return:
+        """
+        result = []
+        for item in self.activity.find(fields={'status':False, '_id':False}):
+            result.append(item)
+        return result
 
     def push(self, table, _ids, field, values):
         """

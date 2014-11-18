@@ -58,6 +58,9 @@ def id_template(_id):
     template = '{"result":"success","id":"%s"}'
     return template % _id
 
+def data_template(data):
+    template = '{"result":"success","data":%s}'
+    return template % data
 
 def id_data_template(_id, data):
     template = '{"result":"success","id":"%s","data":%s}'
@@ -546,6 +549,9 @@ class DB:
                 list1 = json.loads(data);
                 db.remove_user_message(user_id, list1, web)
                 return ''
+            elif action == 'get_all_activity':
+                data = db.get_all_activity()
+                return data_template(data)
             else:
                 return result_template('''Illegal parameters: "action=%s"''' % action)
         except Exception, e:
