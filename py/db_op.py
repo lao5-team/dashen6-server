@@ -189,8 +189,11 @@ class DBOp:
         """
         result = []
         for item in self.activity.find(fields={'status':False}):
-            result.append(json.dumps(item))
-        return result
+            item_result = {}
+            item_result["_id"] = str(item['_id'])
+            item_result["data"] = json.loads(item['data'])
+            result.append(item_result)
+        return json.dumps(result)
 
     def push(self, table, _ids, field, values):
         """
