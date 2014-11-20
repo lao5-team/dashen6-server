@@ -386,6 +386,7 @@ class DB:
                     if debug:
                         web.debug('DB action=set, table=%s' % table)
                     _id = db.new_and_save(table, {'data': data})
+                web.debug('DB data = %s', data)
                 return id_template(_id)
             elif action == 'get':
                 _id = qs_dict.get('id')
