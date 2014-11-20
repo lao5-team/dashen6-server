@@ -134,16 +134,21 @@ class DBOp:
         注意,没有真正删除数据,而是将status置为deleted
         """
         table = self.get_safe_table(table)
-        post = table.find_and_modify(
+
+        """
+        ost = table.find_and_modify(
             query={'_id': ObjectId(_id)},
             update={'$set': {'status': STATUS_DELETED}},
             fields=['_id'])
-
+        """
+        table.remove({'_id':ObjectId(_id)})
+        """
         if post:
             _id = post.get('_id')
             if _id:
                 return str(_id)
         raise Exception('''Couldn't delete id=%s, it doesn't exist.''' % _id)
+        """
 
     def set_user(self, username, data_map):
         """

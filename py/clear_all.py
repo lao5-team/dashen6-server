@@ -12,11 +12,13 @@ con = pymongo.Connection('localhost', 27017)
 db = con['db']
 user = db['user']
 activity = db['activity']
+
 user_activity = db['user_activity']
 user_message = db['user_message']
 message = db['message']
 
 user_message.remove()
 message.remove()
-activity.remove()
+#activity.remove()
+activity.remove({'_id':ObjectId('546c95e9e138236804e093f5')})
 user_activity.remove();
