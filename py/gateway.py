@@ -553,6 +553,10 @@ class DB:
             elif action == 'get_all_activity':
                 data = db.get_all_activity()
                 return data_template(data)
+
+            elif action == 'get_all_picture_info':
+                data = db.get_all_picture_info()
+                return data_template(data)
             else:
                 return result_template('''Illegal parameters: "action=%s"''' % action)
         except Exception, e:

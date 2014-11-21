@@ -23,13 +23,15 @@ class DBOp:
         self.user_activity = self.db[db_user_activity_table]
         self.message = self.db[db_message_table]
         self.user_message = self.db[db_user_message_table]
+        self.picture_info = self.db[db_picture_info_table]
         self.TABLE_MAP = {
             db_user_table: self.user,
             db_activity_table: self.activity,
             db_unit_test_table: self.unit_test,
             db_user_activity_table: self.user_activity,
             db_message_table: self.message,
-            db_user_message_table: self.user_message
+            db_user_message_table: self.user_message,
+            db_picture_info_table:self.picture_info
         }
         self.VALID_TABLES = self.TABLE_MAP.keys()
         self.web = None
@@ -194,7 +196,18 @@ class DBOp:
         """
         result = []
         for item in self.activity.find(fields={'status':False}):
-            item_result = {}
+            item_result["_id"] = str(item['_id'])
+            item_result["data"] = json.loads(item['data'])
+            result.append(item_result)
+        return json.dumps(result)
+
+    def get_all_picture_info(self):
+        """
+        返回所有的PictureInfo
+        :return:
+        """
+        result = []
+        for item in self.picture_info.find(fields={'status':False}):
             item_result["_id"] = str(item['_id'])
             item_result["data"] = json.loads(item['data'])
             result.append(item_result)

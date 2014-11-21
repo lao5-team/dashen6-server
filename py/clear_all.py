@@ -16,7 +16,7 @@ activity = db['activity']
 user_activity = db['user_activity']
 user_message = db['user_message']
 message = db['message']
-
+picture_info = db['picture_info']
 user_message.remove()
 message.remove()
 #activity.remove()
