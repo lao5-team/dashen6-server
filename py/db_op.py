@@ -195,8 +195,9 @@ class DBOp:
         :return:
         """
         result = []
-        item_result = {}
+
         for item in self.activity.find(fields={'status':False}):
+            item_result = {}
             item_result["_id"] = str(item['_id'])
             item_result["data"] = json.loads(item['data'])
             result.append(item_result)
@@ -208,8 +209,9 @@ class DBOp:
         :return:
         """
         result = []
-        item_result = {}
+
         for item in self.picture_info.find(fields={'status':False}):
+            item_result = {}
             item_result["_id"] = str(item['_id'])
             item_result["data"] = json.loads(item['data'])
             result.append(item_result)
