@@ -112,7 +112,7 @@ class SubdomainFormat(RequestFormat):
         if key:
             return "/" + bucket + "/" + key if self.is_bucket_specified(bucket) else "/"
         else:
-            return "/" + bucket +"/" if self.is_bucket_specified(bucket) else "/"  
+            return "/" + bucket +"/" if self.is_bucket_specified(bucket) else "/"
 
     def get_endpoint(self, server, port, bucket):
         return self.get_server(server, bucket) + ':' + str(port)
@@ -137,7 +137,8 @@ class SubdomainFormat(RequestFormat):
         url += self.get_endpoint(server, port, bucket)
         url += self.get_url(is_secure, server, port, bucket, key, path_args)
         return url
-
+    def is_bucket_specified(self, bucket):
+        return True if bucket else False
    
            
 class VanityFormat(SubdomainFormat):
