@@ -489,6 +489,7 @@ class HuaweiS3(object):
             headers["Content-Type"] = ""
                 
         canonical_string = Utils.make_canonicalstring(method, bucket, key, path_args, headers, None)
+        web.debug("canonical_string is %s" % canonical_string)
         encoded_canonical = Utils.encode(self.secret_access_key, canonical_string, False)              
         auth = "AWS " + self.access_key_id + ":" + encoded_canonical  #字符串连接
         
