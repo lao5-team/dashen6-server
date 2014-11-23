@@ -66,7 +66,7 @@ def hws_upload(filename, data):
         print 'Putting "%s" to bucket "%s"' % (filename, hws_bucket_name)
     result = s3.create_object2(hws_bucket_name, filename, data, headers=hws_headers)
     if debug:
-        web.debug ("status %s, reason %s" %(result.status, result.reason))
+        web.debug ("status %s, reason %s, message %s" %(result.status, result.reason, result.msg))
     url = s3.get_object_url(hws_bucket_name, filename)
     if debug:
         print 'URL: %s' % url
