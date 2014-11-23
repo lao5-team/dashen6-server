@@ -16,11 +16,11 @@ debug = True
 """
 hws的配置
 """
-hws_AK = 'F7160B480A5E67431C75'
-hws_SK = '19oGfWwCbvSpmPfwiGxYOjl1EKUAAAFJCl5nQ/S6'
+hws_AK = 'F4B00892050916A70207' #'F7160B480A5E67431C75'
+hws_SK = 'vJCIP5JRd0xM7t1F9NfmrSQZDs4AAAFJBQkWp+z5' #'19oGfWwCbvSpmPfwiGxYOjl1EKUAAAFJCl5nQ/S6'
 hws_ssl = False
-hws_server = 's3.hwclouds.com'
-hws_bucket_name = "galneryus"
+hws_server = 'galneryus.s3.hwclouds.com'
+hws_bucket_name = 'galneryus'
 hws_headers = {'x-amz-acl': ['public-read']}
 
 
@@ -52,6 +52,7 @@ class MyHuaweiS3(HuaweiS3):
         head = self.add_headers(headers, "")
         header_config = self.add_auth_headers(head, method, bucket, key, None)
         header_config["Content-Length"] = str(len(data))
+        web.debug("header_config is %s" %str(header_config))
         return self.send_request(connect_server, method, path, header_config)
 
     def create_object2(self, bucket, key, data, headers=None):
@@ -66,7 +67,7 @@ def hws_upload(filename, data):
         print 'Putting "%s" to bucket "%s"' % (filename, hws_bucket_name)
     result = s3.create_object2(hws_bucket_name, filename, data, headers=hws_headers)
     if debug:
-        web.debug ("status %s, reason %s, message %s" %(result.status, result.reason, result.msg))
+        web.debug ("status %s, reason %s, read %s" %(result.status, result.reason, result.read()))
     url = s3.get_object_url(hws_bucket_name, filename)
     if debug:
         print 'URL: %s' % url
