@@ -46,8 +46,11 @@ class MyHuaweiS3(HuaweiS3):
         if self.is_secure and not isinstance(calling_format, PathFormat) and bucket.find(".") != -1:
             raise Exception("You are making an SSL connection, however, the bucket contains periods and \
                             the wildcard certificate will not match by default. Please consider using HTTP.")
-
+        web.debug("type of calling_format is %s" % calling_format)
         path = calling_format.get_url(self.is_secure, self.server, self.port, bucket, key, None)
+        
+        #path = '/galneryus' + path
+        web.debug("path is %s" % path)
         connect_server = calling_format.get_server(self.server, bucket)
         head = self.add_headers(headers, "")
         header_config = self.add_auth_headers(head, method, bucket, key, None)
