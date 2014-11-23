@@ -15,6 +15,7 @@ activity = db['activity']
 user_activity = db['user_activity']
 user_message = db['user_message']
 message = db['message']
+pictureInfo = db['picture_info']
 '''
 user_message.remove()
 message.remove()
@@ -50,3 +51,7 @@ print "\n"
 for item in message.find():
     print item
 print "\n"
+
+print "picture table"
+for item in pictureInfo.find():
+    print item
