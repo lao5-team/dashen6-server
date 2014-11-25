@@ -7,6 +7,7 @@ import web
 import hashlib
 import urlparse
 import json
+import query_parser
 from db_op import DBOp
 from gateway_config import *
 
@@ -193,6 +194,7 @@ class SaveId:
     """
 
     def __init__(self):
+
         pass
 
     def POST(self):
@@ -340,9 +342,19 @@ class DB:
     """
 
     def __init__(self):
-        pass
+        self.query_parsers = []
+        self.query_parsers.append(GenericQP())
+        self.query_parsers.append(ActivityQP())
+        self.query_parsers.append(UserQP())
+        self.query_parsers.append(UserActivityQP())
+        self.query_parsers.append(UserMessageQP())
+        self.query_parsers.append(PictureInfoQP())
+
 
     def POST(self):
+        for queryparser in self.query_parsers:
+            queryparser.parse_action(web)
+        """
         web.header('Content-Type', 'text/json')
 
         cookie = web.cookies()
@@ -563,6 +575,7 @@ class DB:
             web.debug(str(e))
             set_status_code(web, 500)
             return exception_template(e)
+            """
 
 
 if __name__ == '__main__':
