@@ -7,7 +7,7 @@ import web
 import hashlib
 import urlparse
 import json
-
+from gateway_config import *
 USER = 'user'
 TOKEN = 'token'
 ID = 'id'
