@@ -3,6 +3,19 @@
 #
 # author: yihao
 
+import web
+import hashlib
+import urlparse
+import json
+
+USER = 'user'
+TOKEN = 'token'
+ID = 'id'
+
+statusMap = {400: '400 Bad Request',
+             401: '401 Unauthorized',
+             500: '500 Internal Server Error'}
+
 def check_login(cookie):
     """
     检查用户是否登录
@@ -64,11 +77,17 @@ def exception_template(e):
     template = '{"result":"exception occurred","exception":"%s"}'
     return template % str(e)
 
+def set_status_code(_web, code):
+    status = statusMap.get(code)
+    if status is None:
+        status = '200 OK'
+    _web.ctx.status = status
+
 class QueryParser:
     def __init__(self):
         self.actions = []
 
-    def parse_action(self, web):
+    def parse_action(self, web, db):
 
         web.header('Content-Type', 'text/json')
         cookie = web.cookies()
@@ -92,7 +111,7 @@ class QueryParser:
         table = ''.join(table)
         if action in self.actions:
             try:
-                self.parse_action_impl(self, action, table)
+                self.parse_action_impl(action, table, db)
             except Exception, e:
                 web.debug(str(e))
                 set_status_code(web, 500)
@@ -100,7 +119,7 @@ class QueryParser:
         else:
             return None
 
-    def parse_action_impl(self, action, table):
+    def parse_action_impl(self, action, table, db):
         pass
 
 
@@ -109,7 +128,7 @@ class GenericQP(QueryParser):
         QueryParser.__init__(self)
         self.actions = ['new','set', 'get', 'del']
 
-    def parse_action_impl(self, action, table):
+    def parse_action_impl(self, action, table, db):
         if action == 'new':
             _id = db.new_id(table)
             if debug:
@@ -161,7 +180,7 @@ class ActivityQP(QueryParser):
         QueryParser.__init__(self)
         self.actions = ['get_all_activity']
 
-    def parse_action_impl(self, action, table):
+    def parse_action_impl(self, action, table, db):
         data = db.get_all_activity()
         return data_template(data)
 
@@ -170,7 +189,7 @@ class UserQP(QueryParser):
         QueryParser.__init__(self)
         self.actions = ['set_user', 'get_user']
 
-    def parse_action_impl(self, action, table):
+    def parse_action_impl(self, action, table, db):
         if action == 'set_user':
             username = qs_dict.get('username')
             if not username:
@@ -202,7 +221,7 @@ class UserActivityQP(QueryParser):
         QueryParser.__init__(self)
         self.actions = ['add_user_activity', 'remove_user_activity', 'move_user_activity', 'get_user_activity']
 
-    def parse_action_impl(self, action, table):
+    def parse_action_impl(self, action, table, db):
         if action == 'add_user_activity':
             user_id = qs_dict.get('user_id')
             if not user_id:
@@ -294,7 +313,7 @@ class UserMessageQP(QueryParser):
         QueryParser.__init__(self)
         self.actions = ['add_user_message', 'get_user_message', 'remove_user_message']
 
-    def parse_action_impl(self, action, table):
+    def parse_action_impl(self, action, table, db):
         if action == 'add_user_message':
             user_id = qs_dict.get('user_id')
             if not user_id:
@@ -335,6 +354,6 @@ class PictureInfoQP(QueryParser):
         QueryParser.__init__(self)
         self.actions = ['get_all_picture_info']
 
-    def parse_action_impl(self, action, table):
+    def parse_action_impl(self, action, table, db):
         data = db.get_all_picture_info()
         return data_template(data)
