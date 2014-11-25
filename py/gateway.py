@@ -7,7 +7,7 @@ import web
 import hashlib
 import urlparse
 import json
-import query_parser
+from query_parser import *
 from db_op import DBOp
 from gateway_config import *
 
