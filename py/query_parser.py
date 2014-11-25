@@ -111,7 +111,7 @@ class QueryParser:
         table = ''.join(table)
         if action in self.actions:
             try:
-                self.parse_action_impl(action, table, db)
+                return self.parse_action_impl(action, table, db)
             except Exception, e:
                 web.debug(str(e))
                 set_status_code(web, 500)
