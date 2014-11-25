@@ -86,7 +86,7 @@ def set_status_code(_web, code):
 class QueryParser:
     def __init__(self):
         self.actions = []
-
+        self.qs_dict = None
     def parse_action(self, web, db):
 
         web.header('Content-Type', 'text/json')
@@ -100,10 +100,10 @@ class QueryParser:
         if not qs:
             set_status_code(web, 400)
             return result_template('''No parameters''')
-        qs_dict = urlparse.parse_qs(qs)
+        self.qs_dict = urlparse.parse_qs(qs)
 
-        action = qs_dict.get('action')
-        table = qs_dict.get('table')
+        action = self.qs_dict.get('action')
+        table = self.qs_dict.get('table')
         if not action or not table:
             set_status_code(web, 400)
             return result_template('''Illegal parameters: no "action" nor "table"''')
@@ -135,7 +135,7 @@ class GenericQP(QueryParser):
                 web.debug('DB action=new, table=%s, id=%s' % (table, _id))
             return id_template(_id)
         elif action == 'set':
-            _id = qs_dict.get('id')
+            _id = self.qs_dict.get('id')
             data = web.data()
             if not data:
                 set_status_code(web, 400)
@@ -152,7 +152,7 @@ class GenericQP(QueryParser):
             web.debug('DB data = %s', data)
             return id_template(_id)
         elif action == 'get':
-            _id = qs_dict.get('id')
+            _id = self.qs_dict.get('id')
             if not _id:
                 set_status_code(web, 400)
                 return result_template('''Illegal parameters: no "id"''')
@@ -162,7 +162,7 @@ class GenericQP(QueryParser):
             data = db.load(table, _id)
             return id_data_template(_id, data['data'])
         elif action == 'del':
-            _id = qs_dict.get('id')
+            _id = self.qs_dict.get('id')
             if not _id:
                 set_status_code(web, 400)
                 return result_template('''Illegal parameters: no "id"''')
@@ -191,7 +191,7 @@ class UserQP(QueryParser):
 
     def parse_action_impl(self, action, table, db):
         if action == 'set_user':
-            username = qs_dict.get('username')
+            username = self.qs_dict.get('username')
             if not username:
                 set_status_code(web, 400)
                 return result_template('''Illegal parameters: no "username"''')
@@ -205,7 +205,7 @@ class UserQP(QueryParser):
             username = db.set_user(username, {'data': data})
             return username
         if action == 'get_user':
-            username = qs_dict.get('username')
+            username = self.qs_dict.get('username')
             if not username:
                 set_status_code(web, 400)
                 return result_template('''Illegal parameters: no "username"''')
@@ -223,17 +223,17 @@ class UserActivityQP(QueryParser):
 
     def parse_action_impl(self, action, table, db):
         if action == 'add_user_activity':
-            user_id = qs_dict.get('user_id')
+            user_id = self.qs_dict.get('user_id')
             if not user_id:
                 set_status_code(web, 400)
                 return result_template('''Illegal parameters: no "user_id"''')
             user_id = ''.join(user_id)
-            field = qs_dict.get('field')
+            field = self.qs_dict.get('field')
             if not field:
                 set_status_code(web, 400)
                 return result_template('''Illegal parameters: no "field"''')
             field = ''.join(field)
-            activity_id = qs_dict.get('activity_id')
+            activity_id = self.qs_dict.get('activity_id')
             if not activity_id:
                 set_status_code(web, 400)
                 return result_template('''Illegal parameters: no "activity_id"''')
@@ -246,17 +246,17 @@ class UserActivityQP(QueryParser):
             return user_activity_template(user_id, data['doing_activity'], data['finish_activity'])
 
         elif action == 'remove_user_activity':
-            user_id = qs_dict.get('user_id')
+            user_id = self.qs_dict.get('user_id')
             if not user_id:
                 set_status_code(web, 400)
                 return result_template('''Illegal parameters: no "user_id"''')
             user_id = ''.join(user_id)
-            field = qs_dict.get('field')
+            field = self.qs_dict.get('field')
             if not field:
                 set_status_code(web, 400)
                 return result_template('''Illegal parameters: no "field"''')
             field = ''.join(field)
-            activity_id = qs_dict.get('activity_id')
+            activity_id = self.qs_dict.get('activity_id')
             if not activity_id:
                 set_status_code(web, 400)
                 return result_template('''Illegal parameters: no "activity_id"''')
@@ -269,22 +269,22 @@ class UserActivityQP(QueryParser):
             return user_activity_template(user_id, data['doing_activity'], data['finish_activity'])
 
         elif action == 'move_user_activity':
-            user_id = qs_dict.get('user_id')
+            user_id = self.qs_dict.get('user_id')
             if not user_id:
                 set_status_code(web, 400)
                 return result_template('''Illegal parameters: no "user_id"''')
             user_id = ''.join(user_id)
-            field_source = qs_dict.get('field_source')
+            field_source = self.qs_dict.get('field_source')
             if not field_source:
                 set_status_code(web, 400)
                 return result_template('''Illegal parameters: no "field_source"''')
             field_source = ''.join(field_source)
-            field_dest = qs_dict.get('field_dest')
+            field_dest = self.qs_dict.get('field_dest')
             if not field_dest:
                 set_status_code(web, 400)
                 return result_template('''Illegal parameters: no "field_dest"''')
             field_dest = ''.join(field_dest)
-            activity_id = qs_dict.get('activity_id')
+            activity_id = self.qs_dict.get('activity_id')
             if not activity_id:
                 set_status_code(web, 400)
                 return result_template('''Illegal parameters: no "activity_id"''')
@@ -298,7 +298,7 @@ class UserActivityQP(QueryParser):
             return user_activity_template(user_id, data['doing_activity'], data['finish_activity'])
 
         elif action == 'get_user_activity':
-            user_id = qs_dict.get('user_id')
+            user_id = self.qs_dict.get('user_id')
             if not user_id:
                 set_status_code(web, 400)
                 return result_template('''Illegal parameters: no "user_id"''')
@@ -315,7 +315,7 @@ class UserMessageQP(QueryParser):
 
     def parse_action_impl(self, action, table, db):
         if action == 'add_user_message':
-            user_id = qs_dict.get('user_id')
+            user_id = self.qs_dict.get('user_id')
             if not user_id:
                 set_status_code(web, 400)
                 return result_template('''Illegal parameters: no "user_id"''')
@@ -326,7 +326,7 @@ class UserMessageQP(QueryParser):
             db.add_user_message(user_id, data)
             return ''
         elif action == 'get_user_message':
-            user_id = qs_dict.get('user_id')
+            user_id = self.qs_dict.get('user_id')
             if not user_id:
                 set_status_code(web, 400)
                 return result_template('''Illegal parameters: no "user_id"''')
@@ -336,7 +336,7 @@ class UserMessageQP(QueryParser):
             data = db.get_user_message(user_id)
             return message_template(user_id, data)
         elif action == 'remove_user_message':
-            user_id = qs_dict.get('user_id')
+            user_id = self.qs_dict.get('user_id')
             if not user_id:
                 set_status_code(web, 400)
                 return result_template('''Illegal parameters: no "user_id"''')
