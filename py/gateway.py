@@ -354,7 +354,8 @@ class DB:
     def POST(self):
         for queryparser in self.query_parsers:
             result = queryparser.parse_action(web, db)
-            if not result:
+            if result:
+                web.debug( str(result))
                 return result
         """
         web.header('Content-Type', 'text/json')
