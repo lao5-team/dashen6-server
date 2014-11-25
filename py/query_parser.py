@@ -3,6 +3,18 @@
 #
 # author: yihao
 
+def check_login(cookie):
+    """
+    检查用户是否登录
+    """
+    if cookie:
+        user = cookie.get(USER)
+        if user:
+            token = cookie.get(TOKEN)
+            if token:
+                return True, user, token
+    return False, None, None
+
 def not_login_template():
     return '{"result":"not login"}'
 
