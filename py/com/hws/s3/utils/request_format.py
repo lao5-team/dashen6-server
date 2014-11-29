@@ -108,11 +108,14 @@ class SubdomainFormat(RequestFormat):
     def get_server(self, server, bucket):
         return bucket + '.' + server if bucket else server
 
-    def get_pathbase(self, bucket, key):  
+    def get_pathbase(self, bucket, key):
+        return "/" + key if key else "/"
+        """
         if key:
             return "/" + bucket + "/" + key if self.is_bucket_specified(bucket) else "/"
         else:
             return "/" + bucket +"/" if self.is_bucket_specified(bucket) else "/"
+        """
 
     def get_endpoint(self, server, port, bucket):
         return self.get_server(server, bucket) + ':' + str(port)
