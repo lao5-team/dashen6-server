@@ -19,7 +19,7 @@ hws的配置
 hws_AK = 'F4B00892050916A70207' #'F7160B480A5E67431C75'
 hws_SK = 'vJCIP5JRd0xM7t1F9NfmrSQZDs4AAAFJBQkWp+z5' #'19oGfWwCbvSpmPfwiGxYOjl1EKUAAAFJCl5nQ/S6'
 hws_ssl = False
-hws_server = 'galneryus.s3.hwclouds.com'
+hws_server = 's3.hwclouds.com'
 hws_bucket_name = 'galneryus'
 hws_headers = {'x-amz-acl': ['public-read']}
 
