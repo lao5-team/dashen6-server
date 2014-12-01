@@ -24,6 +24,7 @@ class DBOp:
         self.message = self.db[db_message_table]
         self.user_message = self.db[db_user_message_table]
         self.picture_info = self.db[db_picture_info_table]
+        self.comments = self.db[db_comments_table]
         self.TABLE_MAP = {
             db_user_table: self.user,
             db_activity_table: self.activity,
@@ -31,7 +32,8 @@ class DBOp:
             db_user_activity_table: self.user_activity,
             db_message_table: self.message,
             db_user_message_table: self.user_message,
-            db_picture_info_table:self.picture_info
+            db_picture_info_table:self.picture_info,
+            db_comments_table:self.comments,
         }
         self.VALID_TABLES = self.TABLE_MAP.keys()
         self.web = None
@@ -125,9 +127,9 @@ class DBOp:
         table = self.get_safe_table(table)
         post = table.find_one({'_id': ObjectId(_id), 'status': STATUS_OK}, fields=fields)
         if post is None:
-            raise Exception('''Couldn't load id=%s, it doesn't exist or deleted.''' % _id)
+            raise Exception('''Couldn't load id=%s in %s, it doesn't exist or deleted.''' % (_id,table))
         if not post.get('data'):
-            raise Exception('''Couldn't load data for id=%s, it is a newly created id.''' % _id)
+            raise Exception('''Couldn't load data for id=%s in %s, it is a newly created id.''' %( _id,table))
         return post
 
     def delete(self, table, _id):
@@ -218,6 +220,8 @@ class DBOp:
         return json.dumps(result)
 
     def push(self, table, _ids, field, values):
+        #self.web.debug('push table begin %s id %s field %s value %s' %(table, _ids, field, values))
+        #self.web.debug('type of values %s' % str(type(_ids)))
         """
         在table中,向_ids的field字段对应的队列中中添加一条或多条数据
         """
@@ -244,7 +248,7 @@ class DBOp:
                 fields=['_id'],
                 upsert=True
             )
-
+            #self.web.debug('push table %s id %s field %s value %s' %(table, _ids, field, values))
     def pop(self, table, _ids, field, values):
         """
         在table中,从_ids的field字段对应的队列中中删除一条或多条数据
@@ -358,10 +362,14 @@ class DBOp:
         result = '{"messages":['
         for message_id in post['user_message']:
             message = self.message.find_one({'_id': ObjectId(message_id)}, fields={'status':False, '_id':False})
-            self.web.debug('messge %s' % str(message))
+            self.web.debug('message %s' % str(message))
             message = message['data']
             result = result + json.dumps(message) + ' ,'
         result = result[0:len(result)-1] + ']}'
         self.web.debug('result %s' % result)
         self.pop('user_message', user_id, 'user_message', post['user_message'])
         return result
+
+
+
+

@@ -53,6 +53,12 @@ mongodb的"用户，消息"表名
 db_user_message_table = 'user_message'
 
 """
+mongodb的"评论"表名
+"""
+db_comments_table = 'comment'
+
+"""
 mongodb的"图片信息"表名
 """
 db_picture_info_table = 'picture_info'
+

@@ -73,6 +73,15 @@ def user_activity_template(username, doing_activity, finish_activity):
         finish_activity = ''
     return template % (username, json.dumps(doing_activity), json.dumps(finish_activity))
 
+def activity_comment_template(activity_id, comments):
+    template = '{"result":"success","activity_id":"%s","comment_ids":%s}'
+    return template % (activity_id, json.dumps(comments))
+
+def comment_template(comment):
+    # TODO
+    template = '{"result":"success", "data":%s}'
+    return template % comment
+
 def exception_template(e):
     template = '{"result":"exception occurred","exception":"%s"}'
     return template % str(e)
@@ -178,11 +187,30 @@ class GenericQP(QueryParser):
 class ActivityQP(QueryParser):
     def __init__(self):
         QueryParser.__init__(self)
-        self.actions = ['get_all_activity']
+        self.actions = ['get_all_activity', 'get_activity_comment']
 
+    """
+    获取某个活动的评论
+        参数
+            action=get_activity_comment&table=[table]&activity_id=[id]
+        正常情况下返回返回status code "200 OK"
+        结果格式如下:
+            {"result":"success","activity_id":"%s","comment_ids":%s}
+    """
     def parse_action_impl(self, action, table, db):
-        data = db.get_all_activity()
-        return data_template(data)
+        if action == 'get_all_activity':
+            data = db.get_all_activity()
+            return data_template(data)
+        elif action == 'get_activity_comment':
+            activity_id = self.qs_dict.get('activity_id')
+            if not activity_id:
+                set_status_code(web, 400)
+                return result_template('''Illegal parameters: no "activity_id"''')
+            activity_id = ''.join(activity_id)
+            if debug:
+                web.debug('DB action=get_activity_comment, activity_id=%s' % activity_id)
+            post = db.load(db_activity_table, activity_id)
+            return activity_comment_template(activity_id, post['comments'])
 
 class UserQP(QueryParser):
     def __init__(self):
@@ -357,3 +385,75 @@ class PictureInfoQP(QueryParser):
     def parse_action_impl(self, action, table, db):
         data = db.get_all_picture_info()
         return data_template(data)
+
+class CommentQP(QueryParser):
+    def __init__(self):
+        QueryParser.__init__(self)
+        self.actions = ['addComment', 'removeComment', 'getComment']
+
+    """
+    添加评论
+        参数
+            action=addComment&table=[table]
+        正常情况下返回返回status code "200 OK"
+        结果格式如下:
+            {"result":"success","id":"xxx"}
+
+    读取评论
+        参数
+            action=getComment&table=[table]&id=[id]
+        正常情况下返回返回status code "200 OK"
+        结果格式如下:
+            {"result":"success","data":"xxx"}
+
+    删除评论
+        参数
+            action=removeComment&table=[table]&id=[id]
+        正常情况下返回返回status code "200 OK"
+
+    """
+    def parse_action_impl(self, action, table, db):
+        if action == 'addComment':
+            # 字符串转化为map
+            comment = json.loads(web.data())
+            # 检查activity_id, user_id是否有效
+            activity_id = comment['activity_id']
+            user_name = comment['user_name']
+            db.load(db_activity_table, activity_id)
+            user = db.load_user(user_name)
+            #comment集合中添加数据
+            _id = db.new_and_save(table, {'data': comment})
+            web.debug('DB data = %s'%comment)
+            #Activity中添加'comments'
+            db.push(db_activity_table, str(activity_id), 'comments', str(_id))
+            #User中添加'comments'
+            db.push(db_user_table, str(user['_id']), 'comments', str(_id))
+            return id_template(_id)
+        elif action == 'getComment':
+            _id = self.qs_dict.get('id')
+            if not _id:
+                set_status_code(web, 400)
+                return result_template('''Illegal parameters: no "id"''')
+            _id = ''.join(_id)
+            comment = db.load(db_comments_table, _id, {'status':False, '_id':False})
+            comment['data']['id'] = _id
+            web.debug("comment is %s" % comment)
+            return comment_template(json.dumps(comment['data']))
+        elif action == 'removeComment':
+            #检查id和对应的数据是否存在
+            _id = self.qs_dict.get('id')
+            if not _id:
+                set_status_code(web, 400)
+                return result_template('''Illegal parameters: no "id"''')
+            _id = ''.join(_id)
+            comment = db.load(db_comments_table, _id)
+            #删除数据
+            db.delete(db_comments_table, _id)
+            #删除Activity中的评论
+            db.pop(db_activity_table, comment['activity_id'], 'comments', _id)
+            #删除User中的评论
+            user = db.load_user(comment['user_name'])
+            db.pop(db_user_table, user['_id'], 'comments', _id)
+            return result_template('success')
+
+

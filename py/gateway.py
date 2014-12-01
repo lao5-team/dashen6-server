@@ -349,13 +349,14 @@ class DB:
         self.query_parsers.append(UserActivityQP())
         self.query_parsers.append(UserMessageQP())
         self.query_parsers.append(PictureInfoQP())
+        self.query_parsers.append(CommentQP())
 
 
     def POST(self):
         for queryparser in self.query_parsers:
             result = queryparser.parse_action(web, db)
             if result:
-                web.debug( str(result))
+                web.debug(result)
                 return result
         """
         web.header('Content-Type', 'text/json')
