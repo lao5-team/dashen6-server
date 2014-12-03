@@ -54,10 +54,30 @@ def username_data_template(username, data, _id):
     template = '{"result":"success", "username":"%s", "data":%s, "_id":"%s"}'
     return template % (username, data, _id)
 
+"""
+返回值格式
+{
+    "result": "success",
+    "_id": "547be4086243577273ccc2de",
+    "data": [
+        {
+            "action": "post",
+            "type": "comment",
+            "comment_id": "547f0f5a2d3a8c01a48fa054",
+            "from": {
+                "sex": "male",
+                "name": "rlk_local",
+                "imgUrl": "",
+                "id": "547b48d46243577273ccc2dc"
+            }
+        }
+    ]
+}
+"""
 def message_template(_id, data):
     # TODO
     template = '{"result":"success", "_id":"%s", "data":%s}'
-    return template % (_id, data)
+    return template % (_id, json.dumps(data))
 
 def user_activity_template(username, doing_activity, finish_activity):
     """
@@ -82,14 +102,12 @@ def comment_template(comment):
     return template % comment
 
 def comment_list_template(comment_list):
-    result = '['
+    result = []
     for item in comment_list:
         comment = item['data']
-        #result.append(json.dumps(comment))
-        result = result + json.dumps(comment) + ','
-    result = result[0:len(result)-1] + ']'
+        result.append(comment)
     template = '{"result":"success", "data":%s}'
-    return template % result
+    return template % json.dumps(result)
 
 def exception_template(e):
     template = '{"result":"exception occurred","exception":"%s"}'
