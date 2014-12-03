@@ -78,9 +78,18 @@ def activity_comment_template(activity_id, comments):
     return template % (activity_id, json.dumps(comments))
 
 def comment_template(comment):
-    # TODO
     template = '{"result":"success", "data":%s}'
     return template % comment
+
+def comment_list_template(comment_list):
+    result = '['
+    for item in comment_list:
+        comment = item['data']
+        #result.append(json.dumps(comment))
+        result = result + json.dumps(comment) + ','
+    result = result[0:len(result)-1] + ']'
+    template = '{"result":"success", "data":%s}'
+    return template % result
 
 def exception_template(e):
     template = '{"result":"exception occurred","exception":"%s"}'
@@ -389,7 +398,7 @@ class PictureInfoQP(QueryParser):
 class CommentQP(QueryParser):
     def __init__(self):
         QueryParser.__init__(self)
-        self.actions = ['addComment', 'removeComment', 'getComment']
+        self.actions = ['addComment', 'removeComment', 'getComment',  'getCommentList']
 
     """
     添加评论
@@ -399,9 +408,16 @@ class CommentQP(QueryParser):
         结果格式如下:
             {"result":"success","id":"xxx"}
 
-    读取评论
+    读取某一条评论
         参数
             action=getComment&table=[table]&id=[id]
+        正常情况下返回返回status code "200 OK"
+        结果格式如下:
+            {"result":"success","data":"xxx"}
+
+    读取一组评论
+        参数
+            action=getCommentList&table=[table]
         正常情况下返回返回status code "200 OK"
         结果格式如下:
             {"result":"success","data":"xxx"}
@@ -439,6 +455,11 @@ class CommentQP(QueryParser):
             comment['data']['id'] = _id
             web.debug("comment is %s" % comment)
             return comment_template(json.dumps(comment['data']))
+        elif action == 'getCommentList':
+            ids = json.loads(web.data())['ids']
+            comment_list = db.load_list(db_comments_table, ids, {'status':False, '_id':False})
+            web.debug("comment_list is %s" % comment_list)
+            return comment_list_template(comment_list)
         elif action == 'removeComment':
             #检查id和对应的数据是否存在
             _id = self.qs_dict.get('id')

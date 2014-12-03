@@ -132,6 +132,25 @@ class DBOp:
             raise Exception('''Couldn't load data for id=%s in %s, it is a newly created id.''' %( _id,table))
         return post
 
+    def load_list(self, table, _ids, fields=None):
+        """
+        在table中,读取_ids的数据并返回
+        _ids 是一个ObjectId的字符串形式的数组
+        """
+        if not isinstance(_ids, list):
+            raise Exception('''_ids should be list''')
+        table = self.get_safe_table(table)
+        ids = []
+        for id in _ids:
+            try:
+                ids.append(ObjectId(id))
+            except Exception, e:
+                print e
+        post = table.find({'_id':{'$in':ids}, 'status': STATUS_OK}, fields=fields)
+        if post is None:
+            raise Exception('''Couldn't load id=%s in %s, it doesn't exist or deleted.''' % (_id,table))
+        return post
+
     def delete(self, table, _id):
         """
         在table中,删除_id的数据,返回id
@@ -197,7 +216,6 @@ class DBOp:
         :return:
         """
         result = []
-
         for item in self.activity.find(fields={'status':False}):
             item_result = {}
             item_result["_id"] = str(item['_id'])
@@ -369,6 +387,14 @@ class DBOp:
         self.web.debug('result %s' % result)
         self.pop('user_message', user_id, 'user_message', post['user_message'])
         return result
+
+if __name__ == '__main__':
+    db = DBOp()
+    result = db.load_list('activity', ['547b49162d3a8c110032669a', '547b49de2d3a8c110032669c1'])
+    print result.count()
+    for item in result:
+        print item
+
 
 
 
